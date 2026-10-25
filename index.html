@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F4C45">
+<title>MenuQR</title>
+<script>if(location.hash.indexOf("#/r/")===0)location.replace("menu.html"+location.hash);</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14211F;--muted:#5E6F6C;--bg:#F6F3EC;--card:#fff;--brand:#0F4C45;--brand-2:#0B3A35;--saffron:#E8A317;--line:#E1DDD2;--err:#B3261E;--ok:#1B7F4B;--r:14px}
+*{box-sizing:border-box;margin:0}
+body{font-family:Figtree,system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100dvh;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Bricolage Grotesque',Figtree,sans-serif;letter-spacing:-.02em}
+.hidden{display:none!important}
+button{font:inherit;font-weight:600;cursor:pointer;border:0;border-radius:10px;padding:12px 16px;min-height:46px;background:var(--brand);color:#fff;font-size:15px}
+button:hover{background:var(--brand-2)}button:disabled{opacity:.6;cursor:wait}
+button.ghost{background:transparent;color:var(--brand);border:1.5px solid var(--brand)}
+button.danger{background:transparent;color:var(--err);border:1.5px solid var(--err)}
+button.sm{min-height:38px;padding:8px 14px;font-size:14px}
+label{display:block;font-weight:600;font-size:14px;margin:0 0 6px}
+.field{margin-bottom:14px}
+input,select{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#FCFBF8;color:var(--ink)}
+input:focus,select:focus,button:focus-visible{outline:3px solid rgba(232,163,23,.4)}
+.hint{font-size:13px;color:var(--muted);margin-top:4px}
+.err{color:var(--err);font-size:14px;margin-bottom:12px}
+
+/* login */
+.hero{background:var(--brand);color:#fff;padding:calc(env(safe-area-inset-top) + 40px) 24px 56px}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px}
+.logo i{width:34px;height:34px;border-radius:9px;background:var(--saffron);display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:6px}
+.logo i b{background:var(--brand);border-radius:1px}
+.logo i b:nth-child(2),.logo i b:nth-child(4),.logo i b:nth-child(6){background:transparent}
+.hero h1{font-size:30px;line-height:1.1;margin-top:28px;max-width:14ch}
+.hero p{margin-top:10px;color:#BFD6D2}
+.logincard{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:0 10px 30px -12px rgba(15,76,69,.35);max-width:440px;margin:-28px 20px 28px}
+@media(min-width:520px){.logincard{margin:-28px auto 28px}}
+
+/* app shell */
+.bar{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;display:flex;justify-content:space-between;align-items:center}
+.bar .logo{font-size:18px}.bar .logo i{width:28px;height:28px;padding:5px}
+.bar button{background:rgba(255,255,255,.14);min-height:36px;padding:6px 12px;font-size:14px}
+.page{max-width:720px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+.page h2{font-size:22px;margin-bottom:14px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.head h2{margin:0}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+.nav button{flex:1;background:none;color:var(--muted);border-radius:0;min-height:56px;font-size:13px;position:relative}
+.nav button.on{color:var(--brand)}
+.nav button.on::before{content:"";position:absolute;top:0;left:25%;right:25%;height:3px;background:var(--saffron);border-radius:0 0 3px 3px}
+
+/* content */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.stat{background:var(--card);border-radius:var(--r);padding:14px 16px;border:1px solid var(--line)}
+.stat b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:30px;line-height:1}
+.stat span{color:var(--muted);font-size:14px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.item .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.item h3{font-size:17px}
+.item p{font-size:14px;color:var(--muted);margin-top:3px;word-break:break-word}
+.item .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.badge{font-size:12.5px;font-weight:600;border-radius:99px;padding:3px 10px;white-space:nowrap;background:#E8F1EF;color:var(--brand)}
+.badge.bad{background:#FBE4E2;color:var(--err)}.badge.warn{background:#FFF1CC;color:#7A5600}.badge.prem{background:#FCE9B8;color:#6B4E00}
+.empty{text-align:center;color:var(--muted);padding:36px 12px;background:var(--card);border:1px dashed var(--line);border-radius:var(--r)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tags span{background:#E8F1EF;color:var(--brand);border-radius:99px;padding:3px 10px;font-size:12.5px;font-weight:600}
+
+/* bottom sheet */
+.back{position:fixed;inset:0;background:rgba(10,25,22,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92dvh;overflow:auto;border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom))}
+.sheet h2{font-size:21px;margin-bottom:16px}
+.perms{display:grid;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 12px}
+.chk{display:flex;align-items:center;gap:12px;padding:10px 0;font-weight:500;margin:0;font-size:15px}
+.chk input{width:22px;height:22px;flex:none;accent-color:var(--brand)}
+.sheet .row{display:flex;gap:10px;margin-top:18px}.sheet .row button{flex:1}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:99px;font-size:14px;z-index:30;max-width:90vw}
+
+/* restaurant dashboard */
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 14px;padding:0 16px 4px;scrollbar-width:none}
+.chip{flex:none;background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:99px;min-height:38px;padding:6px 14px;font-size:14px}
+.chip:hover{background:#fff}.chip.on,.chip.on:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+.dish{display:flex;gap:12px}
+.thumb{width:68px;height:68px;border-radius:12px;background:#E8F1EF;flex:none;object-fit:cover;display:grid;place-items:center;color:var(--brand);font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:24px}
+.item p.price{font-weight:600;color:var(--ink)}
+.imgbox{display:flex;gap:12px;align-items:center}.imgbox .thumb{width:84px;height:84px}
+input:disabled,select:disabled{background:#EFECE4;color:#8A9693}
+input[type=color]{padding:4px;height:48px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;box-shadow:0 8px 20px -6px rgba(15,76,69,.6);border-radius:99px;padding:0 20px;min-height:50px}
+
+/* qr + stats + print */
+.qrprev{width:100%;max-width:320px;height:auto;display:block;margin:12px auto;border:1px solid var(--line);border-radius:12px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:120px;margin-top:10px}
+.bars div{flex:1;background:var(--brand);border-radius:4px 4px 0 0;min-height:3px}
+.barl{display:flex;gap:4px;margin-top:4px}.barl span{flex:1;text-align:center;font-size:11px;color:var(--muted)}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.trow:first-of-type{border-top:0}
+#printArea{display:none}
+@media print{body>*:not(#printArea){display:none!important}
+#printArea{display:grid!important;grid-template-columns:1fr 1fr;gap:8mm;padding:8mm}
+#printArea.one{grid-template-columns:1fr;max-width:130mm;margin:0 auto}
+.pc{break-inside:avoid}.pc img{width:100%;display:block;border:1px solid #ccc}}
+.banner{background:#FFF1CC;color:#6B4E00;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px;line-height:1.4}
+.banner.bad{background:#FBE4E2;color:#8A1C14}.banner button{margin-top:10px}
+.bar .r{display:flex;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginView">
+  <header class="hero">
+    <div class="logo"><i><b></b><b></b><b></b><b></b><b></b><b></b></i>MenuQR</div>
+    <h1>Your menu, one scan away.</h1>
+    <p>Sign in to manage your restaurant.</p>
+  </header>
+  <section class="logincard">
+    <h2 style="font-size:22px;margin-bottom:16px">Sign in</h2>
+    <form id="loginForm" novalidate>
+      <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="username" inputmode="email"></div>
+      <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"></div>
+      <p class="err" id="err" role="alert"></p>
+      <button id="submit" type="submit" style="width:100%">Sign in</button>
+    </form>
+  </section>
+</div>
+
+<!-- APP -->
+<div id="appView" class="hidden">
+  <div class="bar">
+    <div class="logo"><i><b></b><b></b><b></b><b></b><b></b><b></b></i><span id="barTitle">MenuQR</span></div>
+    <div class="r"><button data-act="pw">Password</button><button data-act="logout">Sign out</button></div>
+  </div>
+  <main class="page" id="page"></main>
+  <nav class="nav" id="nav"></nav>
+</div>
+
+<div id="sheetHost"></div>
+<div id="printArea"></div>
+
+<script src="config.js"></script>
+<script>
+const API = window.APP_CONFIG.API_URL, KEY = 'menuqr_token';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PERM_LABELS = {
+  'menu.edit':'Edit item name and description','price.edit':'Change prices','image.upload':'Upload pictures',
+  'items.add':'Add new items','items.delete':'Delete items','categories.manage':'Manage categories',
+  'availability.toggle':'Mark items available or sold out','whatsapp.edit':'Change WhatsApp number',
+  'theme.edit':'Change colors (Premium plan)','qr.download':'Download QR codes','analytics.view':'See scan analytics (Premium plan)'
+};
+const S = { me:null, rest:null, plans:[], rests:[], users:[], tab:'home', cats:[], items:[], tables:[], stats:null, info:null, cat:'all', rtab:'menu' };
+const can = (p) => S.me.permissions.includes(p);
+
+async function api(path, method = 'GET', body) {
+  const token = localStorage.getItem(KEY);
+  const res = await fetch(API + path, { method,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+    body: body ? JSON.stringify(body) : undefined });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(data.error || 'Kuch masla aa gaya.'), { status: res.status });
+  return data;
+}
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+function view(v) { $('loginView').classList.toggle('hidden', v !== 'login'); $('appView').classList.toggle('hidden', v !== 'app'); }
+
+/* ---------- bottom sheet ---------- */
+function openSheet(title, html, onSave, extra) {
+  $('sheetHost').innerHTML = `<div class="back" data-act="close"><form class="sheet" id="sheetForm" novalidate>
+    <h2>${esc(title)}</h2>${html}<p class="err" id="sheetErr" role="alert"></p>
+    <div class="row"><button type="button" class="ghost" data-act="close">Cancel</button><button type="submit">Save</button></div>
+    ${extra || ''}</form></div>`;
+  const f = $('sheetForm');
+  f.addEventListener('submit', async (e) => {
+    e.preventDefault(); const b = f.querySelector('[type=submit]'); b.disabled = true; $('sheetErr').textContent = '';
+    try { await onSave(f); closeSheet(); await refresh(); toast('Saved'); }
+    catch (er) { $('sheetErr').textContent = er.message; b.disabled = false; }
+  });
+}
+const closeSheet = () => { $('sheetHost').innerHTML = ''; };
+const fv = (f) => Object.fromEntries(new FormData(f));
+
+/* ---------- helpers ---------- */
+function expiry(r) {
+  if (!r.plan_expires_at) return { t: 'No expiry date', c: '' };
+  const days = Math.ceil((new Date(r.plan_expires_at) - new Date()) / 864e5);
+  if (days < 0) return { t: 'Expired on ' + r.plan_expires_at, c: 'bad' };
+  if (days <= 7) return { t: `Expires in ${days} day${days === 1 ? '' : 's'}`, c: 'warn' };
+  return { t: 'Valid until ' + r.plan_expires_at, c: '' };
+}
+const planOpts = (sel) => S.plans.map((p) => `<option value="${p.id}" ${p.id == sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+
+/* ---------- ADMIN: tabs ---------- */
+function homeTab() {
+  const active = S.rests.filter((r) => r.status === 'active').length;
+  const prem = S.rests.filter((r) => r.plan_code === 'premium').length;
+  const need = S.rests.filter((r) => r.plan_code !== 'free' && ['bad', 'warn'].includes(expiry(r).c));
+  return `<h2>Overview</h2><div class="stats">
+    <div class="stat"><b>${S.rests.length}</b><span>Restaurants</span></div>
+    <div class="stat"><b>${active}</b><span>Active</span></div>
+    <div class="stat"><b>${prem}</b><span>On Premium</span></div>
+    <div class="stat"><b>${S.users.length}</b><span>Restaurant users</span></div></div>
+    <h2 style="font-size:18px">Renewals to follow up</h2>
+    ${need.length ? need.map((r) => `<div class="item"><div class="top"><h3>${esc(r.name)}</h3><span class="badge ${expiry(r).c}">${expiry(r).t}</span></div>
+      <p>${esc(r.plan_name)} plan${r.whatsapp ? ', WhatsApp ' + esc(r.whatsapp) : ''}</p>${renewActs(r)}</div>`).join('')
+      : '<div class="empty">No plans are expiring in the next 7 days.</div>'}`;
+}
+function restsTab() {
+  return `<div class="head"><h2>Restaurants</h2><button class="sm" data-act="new-rest">Add restaurant</button></div>` +
+  (S.rests.length ? S.rests.map((r) => { const e = expiry(r); return `<article class="item">
+    <div class="top"><h3>${esc(r.name)}</h3><span class="badge ${r.status === 'active' ? '' : 'bad'}">${r.status === 'active' ? 'Active' : 'Suspended'}</span></div>
+    <p>Menu link: #/r/${esc(r.slug)}</p>
+    <p>${esc(r.plan_name)} plan. <span class="badge ${e.c}">${e.t}</span> ${r.plan_state === 'expired' ? '<span class="badge bad">Premium features off</span>' : ''}</p>
+    <p>${r.item_count} items, ${r.user_count} users, ${r.scan_count} menu views</p>
+    <div class="acts"><button class="ghost sm" data-act="edit-rest" data-id="${r.id}">Edit</button>${r.plan_code !== 'free' ? `<button class="ghost sm" data-act="renew" data-id="${r.id}">Renew</button>` : ''}${r.whatsapp && r.plan_expires_at ? `<button class="ghost sm" data-act="remind" data-id="${r.id}">Remind</button>` : ''}
+    <button class="${r.status === 'active' ? 'danger' : 'ghost'} sm" data-act="toggle-rest" data-id="${r.id}">${r.status === 'active' ? 'Suspend' : 'Activate'}</button></div></article>`; }).join('')
+  : '<div class="empty">No restaurants yet. Add your first one to get started.</div>');
+}
+function usersTab() {
+  return `<div class="head"><h2>Users</h2><button class="sm" data-act="new-user">Add user</button></div>` +
+  (S.users.length ? S.users.map((u) => `<article class="item">
+    <div class="top"><h3>${esc(u.name)}</h3><span class="badge ${u.is_active ? '' : 'bad'}">${u.is_active ? 'Active' : 'Disabled'}</span></div>
+    <p>${esc(u.email)}</p><p>Restaurant: ${esc(u.restaurant_name)}</p>
+    <div class="tags">${u.permissions.map((p) => `<span>${esc(p)}</span>`).join('') || '<span>No permissions</span>'}</div>
+    <div class="acts"><button class="ghost sm" data-act="edit-user" data-id="${u.id}">Edit rights</button></div></article>`).join('')
+  : `<div class="empty">${S.rests.length ? 'No users yet. Add a user for a restaurant.' : 'Add a restaurant first, then create its user.'}</div>`);
+}
+function plansTab() {
+  return `<h2>Plans</h2>` + S.plans.map((p) => `<article class="item">
+    <div class="top"><h3>${esc(p.name)}</h3><span class="badge ${p.code === 'premium' ? 'prem' : ''}">${esc(p.code)}</span></div>
+    <p>Items: ${p.max_items == null ? 'Unlimited' : p.max_items}</p>
+    <p>Table QR: ${p.table_qr ? 'Yes' : 'No'}. Custom colors: ${p.custom_theme ? 'Yes' : 'No'}. Analytics: ${p.analytics ? 'Yes' : 'No'}</p>
+    <div class="acts"><button class="ghost sm" data-act="edit-plan" data-id="${p.id}">Edit plan</button></div></article>`).join('');
+}
+
+/* ---------- ADMIN: forms ---------- */
+function restForm(r) {
+  r = r || {};
+  openSheet(r.id ? 'Edit restaurant' : 'New restaurant', `
+    <div class="field"><label>Restaurant name</label><input name="name" value="${esc(r.name)}" required></div>
+    <div class="field"><label>Menu link name</label><input name="slug" value="${esc(r.slug)}" placeholder="auto from name" autocapitalize="none">
+      <p class="hint">Letters, numbers and dashes. This becomes the menu address.</p></div>
+    <div class="field"><label>WhatsApp number for orders</label><input name="whatsapp" value="${esc(r.whatsapp)}" inputmode="tel" placeholder="0300 1234567">
+      <p class="hint">Saved in international format automatically.</p></div>
+    <div class="field"><label>Plan</label><select name="plan_id">${planOpts(r.plan_id)}</select></div>
+    <div class="field"><label>Plan valid until</label><input type="date" name="plan_expires_at" value="${esc(r.plan_expires_at)}"></div>`,
+    (f) => { const d = fv(f); return r.id ? api('/api/admin/restaurants/' + r.id, 'PUT', d) : api('/api/admin/restaurants', 'POST', d); },
+    r.id ? `<button type="button" class="danger" style="width:100%;margin-top:18px" data-act="del-rest" data-id="${r.id}">Delete this restaurant</button>
+            <p class="hint" style="text-align:center">Deletes its menu and users too.</p>` : '');
+}
+function userForm(u) {
+  u = u || {}; const sel = u.permissions || [];
+  const perms = S.me.permissions.map((p) => `<label class="chk"><input type="checkbox" name="perm" value="${p}" ${sel.includes(p) ? 'checked' : ''}>${esc(PERM_LABELS[p] || p)}</label>`).join('');
+  openSheet(u.id ? 'Edit user rights' : 'New restaurant user', `
+    ${u.id ? '' : `<div class="field"><label>Restaurant</label><select name="restaurant_id">${S.rests.map((r) => `<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select></div>`}
+    <div class="field"><label>Name</label><input name="name" value="${esc(u.name)}"></div>
+    ${u.id ? `<p class="hint" style="margin:-6px 0 14px">${esc(u.email)}</p>` : '<div class="field"><label>Email</label><input name="email" type="email" inputmode="email" autocapitalize="none"></div>'}
+    <div class="field"><label>${u.id ? 'New password (leave empty to keep)' : 'Password'}</label><input name="password" type="text" autocomplete="off" placeholder="At least 8 characters"></div>
+    <div class="field"><label>What can this user do?</label><div class="perms">${perms}</div>
+      <button type="button" class="ghost sm" style="margin-top:8px" data-act="perm-all">Select or clear all</button></div>
+    ${u.id ? `<label class="chk"><input type="checkbox" name="is_active" ${u.is_active ? 'checked' : ''}>Account is active</label>` : ''}`,
+    (f) => { const d = fv(f); d.permissions = [...f.querySelectorAll('[name=perm]:checked')].map((c) => c.value);
+      if (u.id) { d.is_active = f.is_active.checked; if (!d.password) delete d.password; return api('/api/admin/users/' + u.id, 'PUT', d); }
+      return api('/api/admin/users', 'POST', d); },
+    u.id ? `<button type="button" class="danger" style="width:100%;margin-top:18px" data-act="del-user" data-id="${u.id}">Delete this user</button>` : '');
+}
+function planForm(p) {
+  openSheet('Edit ' + p.name + ' plan', `
+    <div class="field"><label>Plan name</label><input name="name" value="${esc(p.name)}"></div>
+    <div class="field"><label>Maximum items</label><input name="max_items" inputmode="numeric" value="${p.max_items ?? ''}" placeholder="Empty means unlimited"></div>
+    <div class="perms">
+      <label class="chk"><input type="checkbox" name="table_qr" ${p.table_qr ? 'checked' : ''}>Table-wise QR codes</label>
+      <label class="chk"><input type="checkbox" name="custom_theme" ${p.custom_theme ? 'checked' : ''}>Custom colors</label>
+      <label class="chk"><input type="checkbox" name="analytics" ${p.analytics ? 'checked' : ''}>Scan analytics</label></div>`,
+    (f) => api('/api/admin/plans/' + p.id, 'PUT', { name: f.name.value, max_items: f.max_items.value,
+      table_qr: f.table_qr.checked, custom_theme: f.custom_theme.checked, analytics: f.analytics.checked }));
+}
+
+
+/* ---------- RESTAURANT DASHBOARD ---------- */
+const money = (n) => (S.info.currency || 'Rs') + ' ' + Number(n).toLocaleString();
+const catName = (id) => (S.cats.find((c) => c.id === id) || {}).name || 'No category';
+
+function shrink(file, max = 800) {
+  return new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg', .78));
+    };
+    img.onerror = () => rej(new Error('Ye picture khul nahi saki.')); img.src = u;
+  });
+}
+
+function rMenuTab() {
+  const chips = [['all', 'All']].concat(S.cats.map((c) => [c.id, c.name]));
+  const list = S.items.filter((i) => S.cat === 'all' || i.category_id == S.cat);
+  return `<div class="head"><h2>Menu</h2></div>
+  <div class="chips">${chips.map(([k, n]) => `<button class="chip ${S.cat == k ? 'on' : ''}" data-act="cat-filter" data-id="${k}">${esc(n)}</button>`).join('')}</div>` +
+  (list.length ? list.map((i) => `<article class="item"><div class="dish">
+    ${i.image_url ? `<img class="thumb" loading="lazy" alt="" src="${esc(API + i.image_url)}">` : `<div class="thumb">${esc(i.name.charAt(0).toUpperCase())}</div>`}
+    <div style="flex:1;min-width:0"><div class="top"><h3>${esc(i.name)}</h3>${i.is_available ? '' : '<span class="badge bad">Sold out</span>'}</div>
+    <p>${esc(catName(i.category_id))}</p><p class="price">${esc(money(i.price))}</p></div></div>
+    <div class="acts"><button class="ghost sm" data-act="edit-item" data-id="${i.id}">Edit</button>
+    ${can('availability.toggle') ? `<button class="ghost sm" data-act="avail" data-id="${i.id}">${i.is_available ? 'Mark sold out' : 'Available again'}</button>` : ''}</div></article>`).join('')
+  : `<div class="empty">${S.items.length ? 'No items in this category.' : (can('items.add') ? 'Your menu is empty. Add your first item.' : 'No items yet.')}</div>`) +
+  (can('items.add') ? `<button class="fab" data-act="new-item">Add item</button>` : '');
+}
+function rCatsTab() {
+  return `<div class="head"><h2>Categories</h2><button class="sm" data-act="new-cat">Add category</button></div>` +
+  (S.cats.length ? S.cats.map((c, n) => `<article class="item"><div class="top"><h3>${esc(c.name)}</h3><span class="badge ${c.is_visible ? '' : 'bad'}">${c.is_visible ? 'Shown' : 'Hidden'}</span></div>
+    <p>${S.items.filter((i) => i.category_id === c.id).length} items</p>
+    <div class="acts"><button class="ghost sm" data-act="edit-cat" data-id="${c.id}">Rename</button>
+    <button class="ghost sm" data-act="cat-vis" data-id="${c.id}">${c.is_visible ? 'Hide' : 'Show'}</button>
+    ${n > 0 ? `<button class="ghost sm" data-act="cat-up" data-id="${c.id}">Move up</button>` : ''}
+    ${n < S.cats.length - 1 ? `<button class="ghost sm" data-act="cat-down" data-id="${c.id}">Move down</button>` : ''}
+    <button class="danger sm" data-act="del-cat" data-id="${c.id}">Delete</button></div></article>`).join('')
+  : '<div class="empty">No categories yet. Add one like Starters, Mains or Drinks.</div>');
+}
+const menuLink = (slug) => location.origin + location.pathname.replace(/[^/]*$/, '') + 'menu.html#/r/' + slug;
+function rSettingsTab() {
+  const i = S.info, themeOn = can('theme.edit') && i.custom_theme;
+  return `<h2>Settings</h2><div class="item">
+    <div class="field"><label>WhatsApp number for orders</label><input id="sWa" inputmode="tel" value="${esc(i.whatsapp)}" ${can('whatsapp.edit') ? '' : 'disabled'} placeholder="0300 1234567">
+      <p class="hint">Customers send their order to this number.</p></div>
+    <div class="two"><div class="field"><label>Main color</label><input id="sP" type="color" value="${esc(i.theme_primary)}" ${themeOn ? '' : 'disabled'}></div>
+    <div class="field"><label>Accent color</label><input id="sA" type="color" value="${esc(i.theme_accent)}" ${themeOn ? '' : 'disabled'}></div></div>
+    ${!i.custom_theme ? '<p class="hint">Custom colors are part of the Premium plan.</p>' : (!can('theme.edit') ? '<p class="hint">You do not have permission to change colors.</p>' : '')}
+    <button style="width:100%;margin-top:12px" data-act="save-settings">Save settings</button></div>
+    <div class="item"><h3>Your plan</h3><p>${esc(i.plan)} plan. ${esc(expiry({ plan_expires_at: i.plan_expires_at }).t)}</p>
+    </div><div class="item"><h3>Your customer menu</h3><p style="word-break:break-all">${esc(menuLink(i.slug))}</p>
+    <div class="acts"><a href="${esc(menuLink(i.slug))}" target="_blank" rel="noopener"><button class="ghost sm" type="button">Open menu</button></a>
+    <button class="ghost sm" data-act="copy-link">Copy link</button></div></div>`;
+}
+
+function itemForm(it) {
+  const isNew = !it, o = it || {};
+  const off = (perm) => (isNew ? (perm === 'image.upload' && !can(perm)) : !can(perm)) ? 'disabled' : '';
+  let pending = null, removed = false;
+  const imgNow = () => pending || (removed ? '' : (o.image_url ? API + o.image_url : ''));
+  openSheet(isNew ? 'New item' : 'Edit item', `
+    <div class="field"><label>Item name</label><input name="name" value="${esc(o.name)}" ${off('menu.edit')}></div>
+    <div class="field"><label>Description</label><input name="description" value="${esc(o.description)}" ${off('menu.edit')} placeholder="Optional, e.g. served with fries"></div>
+    <div class="two"><div class="field"><label>Price (${esc(S.info.currency)})</label><input name="price" inputmode="decimal" value="${o.price ?? ''}" ${off('price.edit')}></div>
+    <div class="field"><label>Category</label><select name="category_id" ${off('menu.edit')}><option value="">None</option>${S.cats.map((c) => `<option value="${c.id}" ${c.id === o.category_id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div></div>
+    <div class="field"><label>Picture</label><div class="imgbox"><div id="imgPrev" class="thumb"></div>
+      <div><input id="imgFile" type="file" accept="image/*" ${off('image.upload')} style="padding:8px">
+      ${o.image_url && can('image.upload') ? '<button type="button" class="ghost sm" id="imgDel" style="margin-top:8px">Remove picture</button>' : ''}</div></div>
+      <p class="hint">${can('image.upload') ? 'Pictures are made small automatically.' : 'You do not have permission to change pictures.'}</p></div>
+    ${isNew ? '' : `<label class="chk"><input type="checkbox" name="is_available" ${o.is_available ? 'checked' : ''} ${off('availability.toggle')}>Available today</label>`}`,
+    async (f) => {
+      const d = fv(f);
+      if (!isNew && !off('availability.toggle')) d.is_available = f.is_available.checked;
+      if (pending) d.image_url = (await api('/api/r/image', 'POST', { data: pending })).url;
+      else if (removed) d.image_url = '';
+      if (d.category_id === '') d.category_id = null; else if (d.category_id) d.category_id = Number(d.category_id);
+      return isNew ? api('/api/r/items', 'POST', d) : api('/api/r/items/' + o.id, 'PUT', d);
+    },
+    !isNew && can('items.delete') ? `<button type="button" class="danger" style="width:100%;margin-top:18px" data-act="del-item" data-id="${o.id}">Delete this item</button>` : '');
+  const prev = () => { const u = imgNow(); $('imgPrev').innerHTML = u ? `<img src="${esc(u)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : '+'; };
+  prev();
+  $('imgFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    try { pending = await shrink(file); removed = false; prev(); } catch (er) { $('sheetErr').textContent = er.message; }
+  });
+  const del = $('imgDel'); if (del) del.addEventListener('click', () => { pending = null; removed = true; prev(); del.remove(); });
+}
+function catForm(c) {
+  openSheet(c ? 'Rename category' : 'New category',
+    `<div class="field"><label>Category name</label><input name="name" value="${esc(c && c.name)}" placeholder="e.g. Starters"></div>`,
+    (f) => c ? api('/api/r/categories/' + c.id, 'PUT', { name: f.name.value }) : api('/api/r/categories', 'POST', { name: f.name.value }));
+}
+
+
+/* ---------- QR CODES + STATS ---------- */
+const QR_URLS = ['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js', 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'];
+function loadQR() {
+  if (window.qrcode) return Promise.resolve();
+  return new Promise((res, rej) => { let k = 0;
+    const next = () => { if (k >= QR_URLS.length) return rej(new Error('QR library load nahi hui. Internet check karke dobara try karein.'));
+      const sc = document.createElement('script'); sc.src = QR_URLS[k++]; sc.onload = res; sc.onerror = next; document.head.appendChild(sc); };
+    next(); });
+}
+const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) > 160 ? '#14211F' : '#FFFFFF'; };
+const qrColor = () => (S.info.custom_theme ? S.info.theme_primary : '#0F766E');
+const tableName = (l) => (/^\d+$/.test(l) ? 'Table ' + l : l);
+const tableLink = (l) => menuLink(S.info.slug) + '/t/' + encodeURIComponent(l);
+
+async function drawCard(url, title, sub) {
+  await loadQR();
+  const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+  const W = 1000, H = 1300, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  const color = qrColor(), F = '"Bricolage Grotesque", Arial, sans-serif';
+  x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  x.fillStyle = color; x.fillRect(0, 0, W, 230);
+  x.fillStyle = inkOn(color); x.textAlign = 'center'; x.textBaseline = 'middle';
+  let fs = 88; do { x.font = `700 ${fs}px ${F}`; fs -= 4; } while (x.measureText(title).width > 880 && fs > 30);
+  x.fillText(title, W / 2, 118);
+  x.fillStyle = '#14211F'; x.font = `700 58px ${F}`; x.fillText('Scan to see our menu', W / 2, 322);
+  const n = qr.getModuleCount(), cell = Math.floor(720 / (n + 8)), qs = cell * (n + 8), qx = (W - qs) / 2, qy = 380;
+  x.fillStyle = '#111';
+  for (let r = 0; r < n; r++) for (let q = 0; q < n; q++) if (qr.isDark(r, q)) x.fillRect(qx + (q + 4) * cell, qy + (r + 4) * cell, cell, cell);
+  x.fillStyle = '#5E6F6C'; x.font = `500 40px Arial, sans-serif`; x.fillText('Then order on WhatsApp in a few taps', W / 2, qy + qs + 60);
+  if (sub) { x.fillStyle = color; x.beginPath(); x.roundRect ? x.roundRect(250, 1100, 500, 130, 65) : x.rect(250, 1100, 500, 130); x.fill();
+    x.fillStyle = inkOn(color); x.font = `700 70px ${F}`; x.fillText(sub, W / 2, 1167); }
+  return c;
+}
+function saveCanvas(c, name) {
+  c.toBlob((b) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }, 'image/png');
+}
+async function printCards(list) {
+  const cs = await Promise.all(list.map(([u, t, sb]) => drawCard(u, t, sb)));
+  $('printArea').className = cs.length === 1 ? 'one' : '';
+  $('printArea').innerHTML = cs.map((c) => `<div class="pc"><img src="${c.toDataURL('image/png')}" alt=""></div>`).join('');
+  setTimeout(() => window.print(), 200);
+}
+async function paintMainQR() {
+  try { const c = await drawCard(menuLink(S.info.slug), S.info.name, ''); const el = $('qrMain'); if (!el) return;
+    c.className = 'qrprev'; c.id = 'qrMain'; el.replaceWith(c);
+  } catch (e) { const el = $('qrMain'); if (el) el.outerHTML = `<p class="err">${esc(e.message)}</p>`; }
+}
+function rQrTab() {
+  const i = S.info; let h = `<h2>QR codes</h2><div class="item"><h3>Menu QR</h3><p>Customers scan this to open your menu. Print it and place it on tables or at the entrance.</p>
+    <div id="qrMain" class="qrprev" style="aspect-ratio:1000/1300;background:#eee"></div>
+    <div class="acts"><button class="sm" data-act="dl-menu">Download picture</button><button class="ghost sm" data-act="print-menu">Print</button></div></div>`;
+  if (!i.table_qr) return h + `<div class="item"><h3>Table QR codes</h3><p>A separate QR for every table, so each order shows the table number. This is part of the Premium plan.</p></div>`;
+  h += `<div class="item"><div class="top"><h3>Table QR codes</h3><button class="sm" data-act="new-tables">Add tables</button></div>
+    <p>Each table gets its own QR. Orders from it will say which table they came from.</p>`;
+  h += S.tables.length ? S.tables.map((t) => `<div class="trow"><b>${esc(tableName(t.label))}</b><span><button class="ghost sm" data-act="dl-table" data-id="${t.id}">Download</button>
+      <button class="danger sm" data-act="del-table" data-id="${t.id}">Delete</button></span></div>`).join('')
+    + `<button class="ghost" style="width:100%;margin-top:12px" data-act="print-tables">Print all table QR codes</button>`
+    : '<div class="empty" style="margin-top:12px">No tables yet. Tap Add tables to create them.</div>';
+  return h + '</div>';
+}
+function rStatsTab() {
+  if (!S.info.analytics) return '<h2>Stats</h2><div class="empty">Menu view statistics are part of the Premium plan.</div>';
+  const d = S.stats;
+  if (d === null) return '<h2>Stats</h2><div class="empty">Loading…</div>';
+  if (d === false) return '<h2>Stats</h2><div class="empty">Could not load stats. Please try again.</div>';
+  const days = [...Array(14)].map((_, k) => new Date(Date.now() + 5 * 3600e3 - (13 - k) * 864e5).toISOString().slice(0, 10));
+  const map = Object.fromEntries(d.daily.map((r) => [r.day, r.n])), vals = days.map((x) => map[x] || 0), mx = Math.max(1, ...vals);
+  return `<h2>Menu views</h2><div class="stats" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat"><b>${d.today}</b><span>Today</span></div><div class="stat"><b>${d.d7}</b><span>7 days</span></div><div class="stat"><b>${d.d30}</b><span>30 days</span></div></div>
+    <div class="item"><h3>Last 14 days</h3><div class="bars">${vals.map((v, k) => `<div style="height:${Math.round(v / mx * 100)}%" title="${days[k]}: ${v}"></div>`).join('')}</div>
+    <div class="barl">${days.map((x) => `<span>${x.slice(8)}</span>`).join('')}</div><p>${d.total} views in total since you started.</p></div>
+    <div class="item"><h3>Busiest tables (30 days)</h3>${d.tables.length ? d.tables.map((t) => `<div class="trow"><span>${esc(tableName(t.label))}</span><b>${t.n} views</b></div>`).join('')
+      : '<p>No table scans yet. Table views appear once customers scan a table QR code.</p>'}</div>`;
+}
+function tablesForm() {
+  openSheet('Add tables', `<div class="field"><label>Add one table</label><input name="label" placeholder="e.g. 7 or Room 203"></div>
+    <p class="hint" style="margin:-6px 0 14px">Or add many at once:</p>
+    <div class="field"><label>Number of tables</label><input name="count" inputmode="numeric" placeholder="e.g. 20 creates tables 1 to 20"></div>`,
+    (f) => { if (!f.count.value && !f.label.value.trim()) throw new Error('Table ka naam likhein ya tadaad dein.');
+      return api('/api/r/tables', 'POST', f.count.value ? { count: f.count.value } : { label: f.label.value }); });
+}
+
+
+/* ---------- renewals, reminders, password ---------- */
+function renewActs(r) {
+  return `<div class="acts"><button class="sm" data-act="renew" data-id="${r.id}">Renew</button>${r.whatsapp && r.plan_expires_at ? `<button class="ghost sm" data-act="remind" data-id="${r.id}">Remind on WhatsApp</button>` : ''}</div>`;
+}
+function renewForm(r) {
+  openSheet('Renew ' + r.name, `<p class="hint" style="margin-bottom:14px">${esc(expiry(r).t)}. Time is added after the current end date, or from today if the plan has already ended.</p>
+    <div class="field"><label>Add</label><select name="days"><option value="30">1 month</option><option value="90">3 months</option><option value="180">6 months</option><option value="365">1 year</option></select></div>`,
+    (f) => api('/api/admin/restaurants/' + r.id + '/renew', 'POST', { days: f.days.value }));
+}
+function remind(r) {
+  const msg = `Assalam o Alaikum! Your MenuQR ${r.plan_name} plan for ${r.name} ${expiry(r).c === 'bad' ? 'ended' : 'ends'} on ${r.plan_expires_at}. Please send the payment to renew. Thank you.`;
+  window.open('https://wa.me/' + r.whatsapp + '?text=' + encodeURIComponent(msg), '_blank');
+}
+function pwForm() {
+  openSheet('Change password', `<div class="field"><label>Current password</label><input name="cur" type="password" autocomplete="current-password"></div>
+    <div class="field"><label>New password</label><input name="nw" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+    <div class="field"><label>New password again</label><input name="nw2" type="password" autocomplete="new-password"></div>`,
+    async (f) => { if (f.nw.value !== f.nw2.value) throw new Error('Dono naye passwords ek jaise likhein.');
+      await api('/api/auth/password', 'POST', { current: f.cur.value, next: f.nw.value }); });
+}
+function planBanner() {
+  const i = S.info; if (!['soon', 'grace', 'expired'].includes(i.plan_state)) return '';
+  const left = 3 + i.days_left;
+  const msg = { soon: `Your ${i.plan} plan ends in ${i.days_left} day${i.days_left === 1 ? '' : 's'} (${i.plan_expires_at}).`,
+    grace: `Your ${i.plan} plan ended on ${i.plan_expires_at}. Premium features switch off ${left > 0 ? 'in ' + left + ' day' + (left === 1 ? '' : 's') : 'today'} unless you renew.`,
+    expired: `Your ${i.plan} plan has ended, so Premium features are off. Your menu still works for customers.` }[i.plan_state];
+  const wa = (window.APP_CONFIG.SUPPORT_WHATSAPP || '').replace(/\D/g, '');
+  return `<div class="banner ${i.plan_state === 'soon' ? '' : 'bad'}">${esc(msg)}${wa ? `<br><button class="sm" data-act="contact-renew">Contact us to renew</button>` : ''}</div>`;
+}
+
+const R_TABS = () => [['menu', 'Menu', true], ['cats', 'Categories', can('categories.manage')], ['qr', 'QR', can('qr.download')], ['stats', 'Stats', can('analytics.view')],
+  ['settings', 'Settings', can('whatsapp.edit') || can('theme.edit') || true]].filter((t) => t[2]);
+
+function renderRestaurant() {
+  $('barTitle').textContent = S.info.name;
+  const tabs = R_TABS(); if (!tabs.find((t) => t[0] === S.rtab)) S.rtab = 'menu';
+  $('nav').classList.remove('hidden');
+  $('nav').innerHTML = tabs.map(([k, l]) => `<button data-act="rtab" data-id="${k}" class="${S.rtab === k ? 'on' : ''}">${l}</button>`).join('');
+  $('page').innerHTML = planBanner() + { menu: rMenuTab, cats: rCatsTab, qr: rQrTab, stats: rStatsTab, settings: rSettingsTab }[S.rtab]();
+  if (S.rtab === 'qr') paintMainQR();
+}
+
+/* ---------- render ---------- */
+const TABS = [['home', 'Overview'], ['rests', 'Restaurants'], ['users', 'Users'], ['plans', 'Plans']];
+function render() {
+  if (S.me.role === 'admin') {
+    $('barTitle').textContent = 'MenuQR Admin';
+    $('nav').innerHTML = TABS.map(([k, l]) => `<button data-act="tab" data-id="${k}" class="${S.tab === k ? 'on' : ''}">${l}</button>`).join('');
+    $('nav').classList.remove('hidden');
+    $('page').innerHTML = { home: homeTab, rests: restsTab, users: usersTab, plans: plansTab }[S.tab]();
+  } else { renderRestaurant(); }
+}
+async function refresh() {
+  if (S.me.role === 'admin') {
+    const [p, r, u] = await Promise.all([api('/api/admin/plans'), api('/api/admin/restaurants'), api('/api/admin/users')]);
+    S.plans = p.plans; S.rests = r.restaurants; S.users = u.users;
+  } else {
+    const d = await api('/api/r/menu'); S.info = d.restaurant; S.cats = d.categories; S.items = d.items; S.tables = d.tables || [];
+  }
+  render();
+}
+async function boot() {
+  try {
+    const d = await api('/api/auth/me'); S.me = d.user; S.rest = d.restaurant;
+    view('app'); await refresh();
+  } catch (e) { localStorage.removeItem(KEY); view('login'); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  if (el.classList.contains('back') && e.target !== el) return;
+  const id = el.dataset.id, act = el.dataset.act;
+  try {
+    if (act === 'close') closeSheet();
+    else if (act === 'tab') { S.tab = id; render(); window.scrollTo(0, 0); }
+    else if (act === 'logout') { localStorage.removeItem(KEY); view('login'); }
+    else if (act === 'new-rest') restForm();
+    else if (act === 'edit-rest') restForm(S.rests.find((r) => r.id == id));
+    else if (act === 'toggle-rest') { const r = S.rests.find((x) => x.id == id);
+      if (r.status === 'active' && !confirm(`Suspend ${r.name}? Its users will not be able to log in.`)) return;
+      await api('/api/admin/restaurants/' + id, 'PUT', { status: r.status === 'active' ? 'suspended' : 'active' }); await refresh(); toast('Updated'); }
+    else if (act === 'del-rest') { if (confirm('Delete this restaurant with its menu and users? This cannot be undone.')) { await api('/api/admin/restaurants/' + id, 'DELETE'); closeSheet(); await refresh(); toast('Deleted'); } }
+    else if (act === 'new-user') { if (!S.rests.length) return toast('Add a restaurant first'); userForm(); }
+    else if (act === 'edit-user') userForm(S.users.find((u) => u.id == id));
+    else if (act === 'del-user') { if (confirm('Delete this user?')) { await api('/api/admin/users/' + id, 'DELETE'); closeSheet(); await refresh(); toast('Deleted'); } }
+    else if (act === 'edit-plan') planForm(S.plans.find((p) => p.id == id));
+    else if (act === 'rtab') { S.rtab = id;
+      if (id === 'stats' && S.info.analytics) { S.stats = null; render(); S.stats = await api('/api/r/analytics').catch(() => false); }
+      render(); window.scrollTo(0, 0); }
+    else if (act === 'dl-menu') { saveCanvas(await drawCard(menuLink(S.info.slug), S.info.name, ''), 'menu-qr.png'); }
+    else if (act === 'print-menu') await printCards([[menuLink(S.info.slug), S.info.name, '']]);
+    else if (act === 'new-tables') tablesForm();
+    else if (act === 'dl-table') { const t = S.tables.find((x) => x.id == id); saveCanvas(await drawCard(tableLink(t.label), S.info.name, tableName(t.label)), 'qr-' + t.label.replace(/[^a-z0-9]+/gi, '-') + '.png'); }
+    else if (act === 'print-tables') await printCards(S.tables.map((t) => [tableLink(t.label), S.info.name, tableName(t.label)]));
+    else if (act === 'del-table') { if (confirm('Delete this table QR? The printed QR will stop counting this table.')) { await api('/api/r/tables/' + id, 'DELETE'); await refresh(); toast('Deleted'); } }
+    else if (act === 'cat-filter') { S.cat = id === 'all' ? 'all' : Number(id); render(); }
+    else if (act === 'new-item') itemForm();
+    else if (act === 'edit-item') itemForm(S.items.find((i) => i.id == id));
+    else if (act === 'avail') { const i = S.items.find((x) => x.id == id); await api('/api/r/items/' + id, 'PUT', { is_available: !i.is_available }); await refresh(); toast(i.is_available ? 'Marked sold out' : 'Available again'); }
+    else if (act === 'del-item') { if (confirm('Delete this item?')) { await api('/api/r/items/' + id, 'DELETE'); closeSheet(); await refresh(); toast('Deleted'); } }
+    else if (act === 'new-cat') catForm();
+    else if (act === 'edit-cat') catForm(S.cats.find((c) => c.id == id));
+    else if (act === 'cat-vis') { const c = S.cats.find((x) => x.id == id); await api('/api/r/categories/' + id, 'PUT', { is_visible: !c.is_visible }); await refresh(); }
+    else if (act === 'cat-up' || act === 'cat-down') {
+      const n = S.cats.findIndex((c) => c.id == id), o = S.cats[act === 'cat-up' ? n - 1 : n + 1], c = S.cats[n];
+      await Promise.all([api('/api/r/categories/' + c.id, 'PUT', { sort_order: o.sort_order }), api('/api/r/categories/' + o.id, 'PUT', { sort_order: c.sort_order })]);
+      await refresh(); }
+    else if (act === 'del-cat') { if (confirm('Delete this category? Its items stay in the menu without a category.')) { await api('/api/r/categories/' + id, 'DELETE'); S.cat = 'all'; await refresh(); toast('Deleted'); } }
+    else if (act === 'copy-link') { try { await navigator.clipboard.writeText(menuLink(S.info.slug)); toast('Link copied'); } catch (e) { toast('Copy nahi hua, link select kar ke copy karein'); } }
+    else if (act === 'save-settings') {
+      const b = {}; if (can('whatsapp.edit')) b.whatsapp = $('sWa').value;
+      if (can('theme.edit') && S.info.custom_theme) { b.theme_primary = $('sP').value; b.theme_accent = $('sA').value; }
+      await api('/api/r/settings', 'PUT', b); await refresh(); toast('Saved'); }
+    else if (act === 'renew') renewForm(S.rests.find((r) => r.id == id));
+    else if (act === 'remind') remind(S.rests.find((r) => r.id == id));
+    else if (act === 'pw') pwForm();
+    else if (act === 'contact-renew') window.open('https://wa.me/' + window.APP_CONFIG.SUPPORT_WHATSAPP.replace(/\D/g, '') + '?text=' + encodeURIComponent(`Assalam o Alaikum! I would like to renew the MenuQR plan for ${S.info.name}.`), '_blank');
+    else if (act === 'perm-all') { const b = [...document.querySelectorAll('[name=perm]')]; const all = b.every((c) => c.checked); b.forEach((c) => c.checked = !all); }
+  } catch (er) { toast(er.message); }
+});
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); $('err').textContent = '';
+  $('submit').disabled = true; $('submit').textContent = 'Signing in…';
+  try {
+    const { token } = await api('/api/auth/login', 'POST', { email: $('email').value, password: $('password').value });
+    localStorage.setItem(KEY, token); $('password').value = ''; S.tab = 'home'; await boot();
+  } catch (er) { $('err').textContent = er.message; }
+  finally { $('submit').disabled = false; $('submit').textContent = 'Sign in'; }
+});
+
+localStorage.getItem(KEY) ? boot() : view('login');
+</script>
+</body>
+</html>
