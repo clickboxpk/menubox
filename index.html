@@ -97,7 +97,8 @@ input[type=color]{padding:4px;height:48px}
 .trow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
 .trow:first-of-type{border-top:0}
 #printArea{display:none}
-@media print{body>*:not(#printArea){display:none!important}
+@media print{body>*:not(#printArea):not(#rcptPrint){display:none!important}
+#printArea:empty{display:none!important}
 #printArea{display:grid!important;grid-template-columns:1fr 1fr;gap:8mm;padding:8mm}
 #printArea.one{grid-template-columns:1fr;max-width:130mm;margin:0 auto}
 .pc{break-inside:avoid}.pc img{width:100%;display:block;border:1px solid #ccc}}
@@ -114,6 +115,9 @@ input[type=color]{padding:4px;height:48px}
 .tagpick{display:flex;flex-wrap:wrap;gap:4px 16px}
 .tagpick .chk{padding:6px 0}
 .item s{color:var(--muted);font-weight:400}
+.seg2{display:flex;background:#E8E4D8;border-radius:12px;padding:4px;margin-bottom:14px;gap:4px}
+.seg2 button{flex:1;background:transparent;color:var(--muted);min-height:38px;padding:6px}
+.seg2 button:hover{background:transparent}.seg2 button.on,.seg2 button.on:hover{background:#fff;color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 </style>
 </head>
 <body>
@@ -150,6 +154,7 @@ input[type=color]{padding:4px;height:48px}
 <div id="printArea"></div>
 
 <script src="config.js"></script>
+<script src="receipt.js"></script>
 <script>
 const API = window.APP_CONFIG.API_URL, KEY = 'menuqr_token';
 const $ = (id) => document.getElementById(id);
@@ -159,9 +164,10 @@ const PERM_LABELS = {
   'items.add':'Add new items','items.delete':'Delete items','categories.manage':'Manage categories',
   'availability.toggle':'Mark items available or sold out','whatsapp.edit':'Change WhatsApp number',
   'ordering.edit':'Change order types, delivery fee and minimum order','hours.edit':'Change opening hours',
-  'theme.edit':'Change colors (Premium plan)','qr.download':'Download QR codes and manage tables','analytics.view':'See statistics and feedback (Premium plan)'
+  'theme.edit':'Change colors (Premium plan)','qr.download':'Download QR codes and manage tables','analytics.view':'See statistics and feedback (Premium plan)',
+  'orders.view':'See orders, receipts and sales reports (reports need Premium)','billing.view':'See billing history and download payment receipts'
 };
-const S = { pay:{ payments:[], months:[], total_all:0, this_month:'' }, act:[], me:null, rest:null, plans:[], rests:[], users:[], tab:'home', cats:[], items:[], tables:[], stats:null, info:null, cat:'all', rtab:'menu' };
+const S = { ord:{ range:'7', from:'', to:'', list:null, report:null, err:'' }, billing:null, mview:'items', pay:{ payments:[], months:[], total_all:0, this_month:'' }, act:[], me:null, rest:null, plans:[], rests:[], users:[], tab:'home', cats:[], items:[], tables:[], stats:null, info:null, cat:'all', rtab:'menu' };
 const can = (p) => S.me.permissions.includes(p);
 
 async function api(path, method = 'GET', body) {
@@ -330,7 +336,7 @@ function paymentsTab() {
   (P.payments.length ? P.payments.map((p) => `<article class="item"><div class="top"><h3>Rs ${f(p.amount)}</h3><span class="badge">${esc(METH[p.method] || p.method)}</span></div>
     <p>${esc(p.restaurant_name || 'Deleted restaurant')}${p.plan_name ? ', ' + esc(p.plan_name) + ' plan' : ''}</p>
     <p>${esc(p.paid_on)}${p.months ? `, ${p.months} month${p.months === 1 ? '' : 's'} added` : ''}</p>${p.note ? `<p>${esc(p.note)}</p>` : ''}
-    <div class="acts"><button class="danger sm" data-act="pay-del" data-id="${p.id}">Delete</button></div></article>`).join('')
+    <div class="acts"><button class="ghost sm" data-act="pay-jpg" data-id="${p.id}">Receipt (JPG)</button><button class="ghost sm" data-act="pay-print" data-id="${p.id}">Print</button><button class="danger sm" data-act="pay-del" data-id="${p.id}">Delete</button></div></article>`).join('')
     : '<div class="empty">No payments recorded yet. Tap Record payment when a restaurant pays you.</div>');
 }
 function payForm(rid) {
@@ -427,11 +433,16 @@ function shrink(file, max = 800) {
 }
 
 const TAGN = { spicy: 'Spicy', veg: 'Veg', halal: 'Halal', special: "Chef's special" };
+function menuSeg() {
+  if (!can('categories.manage')) return '';
+  return `<div class="seg2"><button class="${S.mview !== 'cats' ? 'on' : ''}" data-act="mview" data-id="items">Items</button><button class="${S.mview === 'cats' ? 'on' : ''}" data-act="mview" data-id="cats">Categories</button></div>`;
+}
 function rMenuTab() {
+  if (S.mview === 'cats' && can('categories.manage')) return rCatsTab();
   const chips = [['all', 'All']].concat(S.cats.map((c) => [c.id, c.name]));
   const list = S.items.filter((i) => S.cat === 'all' || i.category_id == S.cat);
   const canImport = can('items.add') && can('categories.manage');
-  return `<div class="head"><h2>Menu</h2>${canImport ? '<button class="ghost sm" data-act="import-r">Import from file</button>' : ''}</div>
+  return menuSeg() + `<div class="head"><h2>Menu</h2>${canImport ? '<button class="ghost sm" data-act="import-r">Import from file</button>' : ''}</div>
   <div class="chips">${chips.map(([k, n]) => `<button class="chip ${S.cat == k ? 'on' : ''}" data-act="cat-filter" data-id="${k}">${esc(n)}</button>`).join('')}</div>` +
   (list.length ? list.map((i) => `<article class="item"><div class="dish">
     ${i.image_url ? `<img class="thumb" loading="lazy" alt="" src="${esc(API + i.image_url)}">` : `<div class="thumb">${esc(i.name.charAt(0).toUpperCase())}</div>`}
@@ -446,7 +457,7 @@ function rMenuTab() {
   (can('items.add') ? `<button class="fab" data-act="new-item">Add item</button>` : '');
 }
 function rCatsTab() {
-  return `<div class="head"><h2>Categories</h2><button class="sm" data-act="new-cat">Add category</button></div>` +
+  return menuSeg() + `<div class="head"><h2>Categories</h2><button class="sm" data-act="new-cat">Add category</button></div>` +
   (S.cats.length ? S.cats.map((c, n) => `<article class="item"><div class="top"><h3>${esc(c.name)}</h3><span class="badge ${c.is_visible ? '' : 'bad'}">${c.is_visible ? 'Shown' : 'Hidden'}</span></div>
     <p>${S.items.filter((i) => i.category_id === c.id).length} items</p>
     <div class="acts"><button class="ghost sm" data-act="edit-cat" data-id="${c.id}">Rename</button>
@@ -489,7 +500,7 @@ function rSettingsTab() {
       ${!i.custom_theme ? '<p class="hint">Custom colors are part of the Premium plan.</p>' : (!can('theme.edit') ? '<p class="hint">You do not have permission to change colors.</p>' : '')}</div>
     <button style="width:100%;margin-bottom:14px" data-act="save-settings">Save settings</button>
     <div class="item"><h3>Your plan</h3><p>${esc(i.plan)} plan${i.is_trial ? ' (free trial)' : ''}. ${esc(expiry({ plan_expires_at: i.plan_expires_at }).t)}</p></div>
-    <div class="item"><h3>Your customer menu</h3><p style="word-break:break-all">${esc(menuLink(i.slug))}</p>
+    ${billingCard()}<div class="item"><h3>Your customer menu</h3><p style="word-break:break-all">${esc(menuLink(i.slug))}</p>
     <div class="acts"><a href="${esc(menuLink(i.slug))}" target="_blank" rel="noopener"><button class="ghost sm" type="button">Open menu</button></a>
     <button class="ghost sm" data-act="copy-link">Copy link</button></div></div>`;
 }
@@ -563,6 +574,96 @@ function catForm(c) {
 }
 
 
+
+/* ---------- ORDERS, REPORTS, RECEIPTS ---------- */
+const TYPEN = { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' };
+const addD = (d, n) => new Date(new Date(d + 'T00:00:00Z').getTime() + n * 864e5).toISOString().slice(0, 10);
+const cur$ = (n) => (S.info.currency || 'Rs') + ' ' + Receipt.num(n);
+const brandColor = () => (S.info.custom_theme ? S.info.theme_primary : '#0F766E');
+function rangeDates(k) {
+  const t = pkDay();
+  return k === 'today' ? [t, t] : k === 'custom' ? [S.ord.from, S.ord.to] : [addD(t, -({ 7: 6, 14: 13, 30: 29 }[k])), t];
+}
+async function loadOrders() {
+  const o = S.ord, [from, to] = rangeDates(o.range);
+  o.list = null; o.report = null; o.err = ''; render();
+  try {
+    const q = '?from=' + from + '&to=' + to, jobs = [api('/api/r/orders' + q)];
+    if (S.info.analytics) jobs.push(api('/api/r/reports' + q));
+    const [a, b] = await Promise.all(jobs);
+    o.list = a.orders; o.report = b || null; o.from = a.from; o.to = a.to;
+  } catch (e) { o.err = e.message; o.list = []; }
+  render();
+}
+function dailyRows(r) {   // one row per day, or per month when the range is long
+  if (r.daily.length <= 31) return r.daily.map((d) => ({ label: d.day, n: d.n, sales: d.sales }));
+  const by = {}; r.daily.forEach((d) => { const k = d.day.slice(0, 7); by[k] = by[k] || { label: k, n: 0, sales: 0 }; by[k].n += d.n; by[k].sales += d.sales; });
+  return Object.values(by);
+}
+function reportDoc(r) {
+  return { brand: S.info.name, accent: brandColor(), title: 'Sales report', subtitle: r.from === r.to ? r.from : r.from + ' to ' + r.to,
+    meta: [['Orders', String(r.orders)], ['Average order', r.orders ? cur$(r.sales / r.orders) : '-']],
+    sections: [
+      { title: 'By order type', rows: r.types.map((t) => ({ a: TYPEN[t.type] || t.type, b: cur$(t.sales), sub: t.n + ' order' + (t.n === 1 ? '' : 's') })) },
+      { title: 'Sales by ' + (r.daily.length <= 31 ? 'day' : 'month'), rows: dailyRows(r).map((d) => ({ a: d.label, b: cur$(d.sales), sub: d.n + ' order' + (d.n === 1 ? '' : 's') })) },
+      { title: 'Most ordered dishes', rows: r.top.map((t, i) => ({ a: (i + 1) + '. ' + t.name, b: t.qty + ' sold', sub: cur$(t.sales) })) },
+    ].filter((x) => x.rows.length),
+    totals: [['Total sales', cur$(r.sales), true]],
+    footer: 'Based on the orders customers sent through your menu. Orders that were never sent on WhatsApp may be included.' };
+}
+function orderDoc(o) {
+  return { brand: S.info.name, accent: brandColor(), title: 'Order receipt', subtitle: 'Order #' + o.code,
+    meta: [['Date', Receipt.when(o.created_at)], ['Order type', TYPEN[o.order_type]], ['Table', o.table_label || ''], ['Name', o.customer_name || ''], ['Phone', o.phone || ''], ['Address', o.address || ''], ['Note', o.note || '']],
+    sections: [{ title: 'Items', rows: o.items.map((i) => ({ a: i.qty + ' x ' + i.name, b: cur$(i.total), sub: i.label })) }],
+    totals: [...(o.delivery_fee ? [['Items', cur$(o.subtotal)], ['Delivery fee', cur$(o.delivery_fee)]] : []), ['Total', cur$(o.total), true]],
+    footer: 'Thank you!' };
+}
+function payDoc(p, rname) {
+  const brand = window.APP_CONFIG.BRAND || 'MenuQR';
+  return { brand, accent: '#0F4C45', title: 'Payment receipt', subtitle: 'Receipt P-' + String(p.id).padStart(5, '0'),
+    meta: [['Restaurant', rname], ['Date paid', p.paid_on], ['Paid by', METH[p.method] || p.method], ['Plan', p.plan_name || ''], ['Valid until', p.valid_until || ''], ['Note', p.note || '']],
+    sections: [], totals: [['Amount received', 'Rs ' + Receipt.num(p.amount), true]], footer: `Thank you for choosing ${brand}. This receipt confirms the payment received.` };
+}
+function reportCard() {
+  if (!S.info.analytics) return '<div class="item"><h3>Sales report</h3><p>Totals, sales by day and your most ordered dishes, with a report you can print or save as a picture. This is part of the Premium plan.</p></div>';
+  const r = S.ord.report; if (!r) return '';
+  const rows = dailyRows(r);
+  return `<div class="stats" style="grid-template-columns:repeat(3,1fr)"><div class="stat"><b style="font-size:22px">${r.orders}</b><span>Orders</span></div>
+    <div class="stat"><b style="font-size:22px">${Receipt.num(r.sales)}</b><span>Sales (${esc(S.info.currency)})</span></div>
+    <div class="stat"><b style="font-size:22px">${r.orders ? Receipt.num(Math.round(r.sales / r.orders)) : '-'}</b><span>Average order</span></div></div>
+    ${r.orders ? `<div class="item"><h3>By order type</h3>${r.types.map((t) => `<div class="trow"><span>${esc(TYPEN[t.type] || t.type)} (${t.n})</span><b>${esc(cur$(t.sales))}</b></div>`).join('')}</div>
+    <div class="item"><h3>Sales by ${r.daily.length <= 31 ? 'day' : 'month'}</h3>${rows.map((d) => `<div class="trow"><span>${esc(d.label)} (${d.n})</span><b>${esc(cur$(d.sales))}</b></div>`).join('')}</div>
+    <div class="item"><h3>Most ordered dishes</h3>${r.top.map((t, i) => `<div class="trow"><span>${i + 1}. ${esc(t.name)}</span><b>${t.qty} sold</b></div>`).join('')}</div>
+    <div class="acts" style="margin:0 0 16px"><button class="sm" data-act="rep-jpg">Download report (JPG)</button><button class="ghost sm" data-act="rep-print">Print report</button></div>` : ''}`;
+}
+function orderCard(o) {
+  const who = [o.table_label && tableName(o.table_label), o.customer_name, o.phone].filter(Boolean).join(', ');
+  return `<article class="item"><div class="top"><h3>#${esc(o.code)}</h3><span class="badge">${esc(TYPEN[o.order_type] || o.order_type)}</span></div>
+    <p>${esc(Receipt.when(o.created_at))}</p>${who ? `<p>${esc(who)}</p>` : ''}
+    <p>${o.items.slice(0, 3).map((i) => i.qty + ' x ' + esc(i.name)).join(', ')}${o.items.length > 3 ? ` and ${o.items.length - 3} more` : ''}</p>
+    <p class="price">${esc(cur$(o.total))}</p>
+    <div class="acts"><button class="ghost sm" data-act="ord-jpg" data-id="${o.id}">Receipt (JPG)</button><button class="ghost sm" data-act="ord-print" data-id="${o.id}">Print</button></div></article>`;
+}
+function rOrdersTab() {
+  const o = S.ord, chips = [['today', 'Today'], ['7', '7 days'], ['14', '14 days'], ['30', '1 month'], ['custom', 'Custom']];
+  let h = `<h2>Orders</h2><div class="chips">${chips.map(([k, n]) => `<button class="chip ${o.range === k ? 'on' : ''}" data-act="range" data-id="${k}">${n}</button>`).join('')}</div>`;
+  if (o.range === 'custom') h += `<div class="item"><div class="two"><div class="field"><label>From</label><input type="date" id="rgFrom" value="${esc(o.from)}"></div>
+    <div class="field"><label>To</label><input type="date" id="rgTo" value="${esc(o.to)}"></div></div><button class="sm" data-act="range-apply">Show</button></div>`;
+  if (o.list === null) return h + '<div class="empty">Loading…</div>';
+  if (o.err) return h + `<div class="empty">${esc(o.err)}</div>`;
+  return h + `<p class="hint" style="margin-bottom:10px">${esc(o.from)} to ${esc(o.to)} (Pakistan dates)</p>` + reportCard() +
+    (o.list.length ? '<h2 style="font-size:18px;margin-top:6px">Orders</h2>' + o.list.map(orderCard).join('') + (o.list.length >= 100 ? '<p class="hint">Showing the latest 100 orders.</p>' : '')
+      : '<div class="empty">No orders in this period. Orders appear here when customers send them from your menu.</div>');
+}
+function billingCard() {
+  if (!can('billing.view')) return '';
+  if (S.billing === null) return '<div class="item"><h3>Billing history</h3><p>Loading…</p></div>';
+  return `<div class="item"><h3>Billing history</h3>${S.billing.length ? S.billing.map((p) => `<div class="trow" style="display:block"><div class="top"><b>Rs ${Receipt.num(p.amount)}</b><span class="hint">${esc(p.paid_on)}</span></div>
+    <p>${esc(p.plan_name || '')}${p.valid_until ? ', valid until ' + esc(p.valid_until) : ''}</p>
+    <div class="acts"><button class="ghost sm" data-act="bill-jpg" data-id="${p.id}">Receipt (JPG)</button><button class="ghost sm" data-act="bill-print" data-id="${p.id}">Print</button></div></div>`).join('')
+    : '<p>No payments recorded yet.</p>'}</div>`;
+}
+
 /* ---------- QR CODES + STATS ---------- */
 const QR_URLS = ['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js', 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'];
 function loadQR() {
@@ -602,6 +703,7 @@ function saveCanvas(c, name) {
 }
 async function printCards(list) {
   const cs = await Promise.all(list.map(([u, t, sb]) => drawCard(u, t, sb)));
+  const rp = $('rcptPrint'); if (rp) rp.innerHTML = '';
   $('printArea').className = cs.length === 1 ? 'one' : '';
   $('printArea').innerHTML = cs.map((c) => `<div class="pc"><img src="${c.toDataURL('image/png')}" alt=""></div>`).join('');
   setTimeout(() => window.print(), 200);
@@ -681,15 +783,14 @@ function planBanner() {
   return `<div class="banner ${i.plan_state === 'soon' ? '' : 'bad'}">${esc(msg)}${wa ? `<br><button class="sm" data-act="contact-renew">${t ? 'Contact us to continue' : 'Contact us to renew'}</button>` : ''}</div>`;
 }
 
-const R_TABS = () => [['menu', 'Menu', true], ['cats', 'Categories', can('categories.manage')], ['qr', 'QR', can('qr.download')], ['stats', 'Stats', can('analytics.view')],
-  ['settings', 'Settings', can('whatsapp.edit') || can('theme.edit') || true]].filter((t) => t[2]);
+const R_TABS = () => [['menu', 'Menu', true], ['orders', 'Orders', can('orders.view')], ['qr', 'QR', can('qr.download')], ['stats', 'Stats', can('analytics.view')], ['settings', 'Settings', true]].filter((t) => t[2]);
 
 function renderRestaurant() {
   $('barTitle').textContent = S.info.name;
   const tabs = R_TABS(); if (!tabs.find((t) => t[0] === S.rtab)) S.rtab = 'menu';
   $('nav').classList.remove('hidden');
   $('nav').innerHTML = tabs.map(([k, l]) => `<button data-act="rtab" data-id="${k}" class="${S.rtab === k ? 'on' : ''}">${l}</button>`).join('');
-  $('page').innerHTML = planBanner() + { menu: rMenuTab, cats: rCatsTab, qr: rQrTab, stats: rStatsTab, settings: rSettingsTab }[S.rtab]();
+  $('page').innerHTML = planBanner() + { menu: rMenuTab, orders: rOrdersTab, cats: rCatsTab, qr: rQrTab, stats: rStatsTab, settings: rSettingsTab }[S.rtab]();
   if (S.rtab === 'qr') paintMainQR();
   if (S.rtab === 'settings') syncHours();
 }
@@ -739,9 +840,18 @@ document.addEventListener('click', async (e) => {
     else if (act === 'edit-user') userForm(S.users.find((u) => u.id == id));
     else if (act === 'del-user') { if (confirm('Delete this user?')) { await api('/api/admin/users/' + id, 'DELETE'); closeSheet(); await refresh(); toast('Deleted'); } }
     else if (act === 'edit-plan') planForm(S.plans.find((p) => p.id == id));
-    else if (act === 'rtab') { S.rtab = id;
+    else if (act === 'rtab') { S.rtab = id; S.mview = 'items';
       if (id === 'stats' && S.info.analytics) { S.stats = null; render(); S.stats = await api('/api/r/analytics').catch(() => false); }
+      if (id === 'settings' && can('billing.view')) { S.billing = null; render(); S.billing = await api('/api/r/billing').then((d) => d.payments).catch(() => []); }
+      if (id === 'orders') { render(); await loadOrders(); return window.scrollTo(0, 0); }
       render(); window.scrollTo(0, 0); }
+    else if (act === 'mview') { S.mview = id; render(); }
+    else if (act === 'range') { S.ord.range = id; if (id === 'custom') { if (!S.ord.from) { S.ord.to = pkDay(); S.ord.from = addD(S.ord.to, -6); } render(); } else await loadOrders(); }
+    else if (act === 'range-apply') { S.ord.from = $('rgFrom').value; S.ord.to = $('rgTo').value; if (!S.ord.from || !S.ord.to) return toast('Choose both dates'); await loadOrders(); }
+    else if (act === 'ord-jpg' || act === 'ord-print') { const o = S.ord.list.find((x) => x.id == id), c = Receipt.draw(orderDoc(o)); if (act === 'ord-jpg') Receipt.saveJpg(c, 'order-' + o.code); else Receipt.print([c]); }
+    else if (act === 'rep-jpg' || act === 'rep-print') { const r = S.ord.report, c = Receipt.draw(reportDoc(r)); if (act === 'rep-jpg') Receipt.saveJpg(c, 'sales-report-' + r.from + '-to-' + r.to); else Receipt.print([c]); }
+    else if (act === 'bill-jpg' || act === 'bill-print') { const pm = S.billing.find((x) => x.id == id), c = Receipt.draw(payDoc(pm, S.info.name)); if (act === 'bill-jpg') Receipt.saveJpg(c, 'payment-receipt-P' + pm.id); else Receipt.print([c]); }
+    else if (act === 'pay-jpg' || act === 'pay-print') { const pm = S.pay.payments.find((x) => x.id == id), c = Receipt.draw(payDoc(pm, pm.restaurant_name || '')); if (act === 'pay-jpg') Receipt.saveJpg(c, 'payment-receipt-P' + pm.id); else Receipt.print([c]); }
     else if (act === 'dl-menu') { saveCanvas(await drawCard(menuLink(S.info.slug), S.info.name, ''), 'menu-qr.png'); }
     else if (act === 'print-menu') await printCards([[menuLink(S.info.slug), S.info.name, '']]);
     else if (act === 'new-tables') tablesForm();

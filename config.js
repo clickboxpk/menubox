@@ -1,6 +1,8 @@
-// Worker deploy hone ke baad ka URL yahan paste karein
+// Paste your Worker URL after you deploy it
 window.APP_CONFIG = {
-  API_URL: "https://qr-menu-api.ufonej5.workers.dev",
-  // Aap ka apna WhatsApp number (923001234567 format). Restaurant users "renew karein" ke liye isi par rabta karte hain.
+  API_URL: "https://qr-menu-api.ufonej5.workers.dev/",
+  // Your own WhatsApp number (923001234567 format). Restaurants contact you here to renew.
   SUPPORT_WHATSAPP: "923427980488",
+  // Name shown on payment receipts
+  BRAND: "Menu QR System",
 };

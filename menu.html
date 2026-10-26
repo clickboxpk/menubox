@@ -93,6 +93,7 @@ section h2{font-size:22px;margin:22px 0 10px}
 .clear{display:block;margin:10px auto 0;background:transparent;color:var(--muted);font-weight:500;min-height:40px;font-size:14px;text-decoration:underline}
 .warn{background:#FFF1CC;color:#6B4E00;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:14px}
 .err{color:#B3261E;font-size:14px;margin-top:10px;text-align:center}
+.rimg{width:100%;display:block;border-radius:14px;border:1px solid var(--line);margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -101,6 +102,7 @@ section h2{font-size:22px;margin:22px 0 10px}
 <div id="host"></div>
 
 <script src="config.js"></script>
+<script src="receipt.js"></script>
 <script>
 const API = window.APP_CONFIG.API_URL;
 const $ = (id) => document.getElementById(id);
@@ -241,28 +243,80 @@ function orderSheet() {
     ${form.type === 'delivery' ? field('address', 'Delivery address', `<textarea id="f_address" rows="2" autocomplete="street-address">${esc(form.address)}</textarea>`) : ''}
     ${field('note', 'Anything to tell the kitchen? (optional)', `<textarea id="f_note" rows="2" placeholder="e.g. less spicy">${esc(form.note)}</textarea>`)}
     ${R.whatsapp && isOpen() ? `<button class="send" data-a="send" ${below ? 'disabled' : ''}>Send order on WhatsApp</button>
-      <p class="how">WhatsApp will open with your order already written. Just tap the send button there.</p><p class="err" id="sendErr" role="alert"></p>`
+      <p class="how">WhatsApp will open with your order already written. Just tap the send button there. You can save a receipt afterwards.</p><p class="err" id="sendErr" role="alert"></p>`
       : `<p class="warn">${!isOpen() ? 'This restaurant is closed right now, so orders cannot be sent.' : 'This restaurant has not set up WhatsApp ordering yet. Please show this list to the staff.'}</p>`}
     <button class="clear" data-a="clear">Clear my order</button></div></div>`;
   $('bar').classList.add('hidden');
 }
 function closeSheet() { $('host').innerHTML = ''; $('host').dataset.sheet = ''; opt = null; bar(); }
-function send() {
+async function send() {
   readForm();
-  const R = D.restaurant, err = (t) => { $('sendErr').textContent = t; };
+  const R = D.restaurant, err = (t) => { const e = $('sendErr'); if (e) e.textContent = t; };
   if (form.type === 'delivery' && (!form.name.trim() || !form.phone.trim() || !form.address.trim())) return err('Please fill in your name, phone number and address for delivery.');
   if (form.type === 'delivery' && R.min_order && subtotal() < R.min_order) return err('Your order is below the minimum for delivery.');
   try { localStorage.setItem('cust', JSON.stringify({ name: form.name, phone: form.phone, address: form.address })); } catch (e) {}
-  const label = { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' }[form.type], fee = feeNow();
-  const msg = [`*New order - ${R.name}*`, `Order type: ${label}`,
-    form.type === 'dinein' && form.table.trim() ? `Table: ${form.table.trim()}` : null,
-    form.name.trim() ? `Name: ${form.name.trim()}` : null, form.type !== 'dinein' && form.phone.trim() ? `Phone: ${form.phone.trim()}` : null,
-    form.type === 'delivery' ? `Address: ${form.address.trim()}` : null, '',
-    ...lines().map((l) => `${l.q} x ${l.it.name}${l.label ? ' (' + l.label + ')' : ''} - ${money(l.unit * l.q)}`), '',
-    fee ? `Items: ${money(subtotal())}` : null, fee ? `Delivery fee: ${money(fee)}` : null,
-    `*Total: ${money(subtotal() + fee)}*`, form.note.trim() ? `Note: ${form.note.trim()}` : null].filter((x) => x !== null).join('\n');
+  const btn = document.querySelector('.send[data-a="send"]'); btn.disabled = true; btn.textContent = 'Sending…'; err('');
+  const payload = { type: form.type, name: form.name.trim(), table: form.table.trim(), phone: form.phone.trim(), address: form.address.trim(), note: form.note.trim(),
+    lines: lines().map((l) => { const [id, s, a] = l.k.split('|'); return { id: +id, size: +s, addons: a ? a.split('.').map(Number) : [], qty: l.q }; }) };
+  let order = null;
+  try {   // the restaurant's system records the order and recalculates the prices
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 7000);
+    const res = await fetch(API + '/api/public/order/' + slug, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: ctl.signal });
+    clearTimeout(to);
+    const j = await res.json().catch(() => ({}));
+    if (res.ok) order = j.order;
+    else if (res.status < 500) { btn.disabled = false; btn.textContent = 'Send order on WhatsApp'; return err(j.error || 'Could not place the order.'); }
+  } catch (e) { /* network problem: the customer can still send the WhatsApp message */ }
+  if (!order) order = localOrder();
+  const label = { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' }[order.type], m = (n) => money(n);
+  const msg = [`*New order${order.code ? ' #' + order.code : ''} - ${R.name}*`, `Order type: ${label}`,
+    order.table ? `Table: ${order.table}` : null, order.name ? `Name: ${order.name}` : null, order.phone ? `Phone: ${order.phone}` : null,
+    order.type === 'delivery' ? `Address: ${order.address}` : null, '',
+    ...order.items.map((i) => `${i.qty} x ${i.name}${i.label ? ' (' + i.label + ')' : ''} - ${m(i.total)}`), '',
+    order.fee ? `Items: ${m(order.subtotal)}` : null, order.fee ? `Delivery fee: ${m(order.fee)}` : null,
+    `*Total: ${m(order.total)}*`, order.note ? `Note: ${order.note}` : null].filter((x) => x !== null).join('\n');
+  try { localStorage.setItem(PK, JSON.stringify({ order, at: Date.now() })); } catch (e) {}
+  setTimeout(maybeReceipt, 3000);   // if WhatsApp did not take over the screen, show the receipt anyway
   location.href = 'https://wa.me/' + R.whatsapp + '?text=' + encodeURIComponent(msg);
 }
+function localOrder() {
+  const R = D.restaurant, fee = feeNow(), sub = subtotal();
+  return { code: '', created_at: new Date().toISOString().slice(0, 19).replace('T', ' '), type: form.type, table: form.type === 'dinein' ? form.table.trim() : '',
+    name: form.name.trim(), phone: form.type !== 'dinein' ? form.phone.trim() : '', address: form.type === 'delivery' ? form.address.trim() : '', note: form.note.trim(),
+    items: lines().map((l) => ({ name: l.it.name, label: l.label, qty: l.q, unit: l.unit, total: l.unit * l.q })), subtotal: sub, fee, total: sub + fee, currency: R.currency, restaurant: R.name };
+}
+
+/* ---------- receipt popup (shown when the customer comes back from WhatsApp) ---------- */
+const PK = 'pend:' + slug; let rcptOpen = false, RC = null, RO = null;
+function receiptDoc(o) {
+  const R = D.restaurant, m = (n) => o.currency + ' ' + Receipt.num(n);
+  return { brand: o.restaurant || R.name, accent: R.primary, title: 'Order receipt', subtitle: o.code ? 'Order #' + o.code : 'Order summary',
+    meta: [['Date', Receipt.when(o.created_at)], ['Order type', { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' }[o.type]],
+      ['Table', o.table], ['Name', o.name], ['Phone', o.phone], ['Address', o.address]],
+    sections: [{ title: 'Your order', rows: o.items.map((i) => ({ a: i.qty + ' x ' + i.name, b: m(i.total), sub: i.label })) }],
+    totals: [...(o.fee ? [['Items', m(o.subtotal)], ['Delivery fee', m(o.fee)]] : []), ['Total', m(o.total), true]],
+    footer: 'Thank you! This receipt shows the order you sent to the restaurant on WhatsApp. Please keep it as your record.' };
+}
+function maybeReceipt() {
+  if (rcptOpen || !D || document.visibilityState === 'hidden') return;
+  let p = null; try { p = JSON.parse(localStorage.getItem(PK) || 'null'); } catch (e) {}
+  if (!p || Date.now() - p.at > 6 * 3600e3) { try { localStorage.removeItem(PK); } catch (e) {} return; }
+  showReceipt(p.order);
+}
+function showReceipt(o) {
+  rcptOpen = true; RO = o; cart = {}; save(); D.items.forEach((i) => paintItem(i.id));
+  RC = Receipt.draw(receiptDoc(o));
+  $('host').dataset.sheet = 'receipt';
+  $('host').innerHTML = `<div class="back" data-a="rshut"><div class="sheet" role="dialog" aria-label="Your receipt">
+    <div class="hd"><h2>Your receipt</h2><button class="x" data-a="rclose">Close</button></div>
+    <p class="how" style="margin:0 0 12px;text-align:left">If WhatsApp has not sent your message yet, go back and tap send there. Save this receipt as your record.</p>
+    <img class="rimg" alt="Order receipt" src="${RC.toDataURL('image/jpeg', 0.9)}">
+    <button class="send" style="background:var(--brand);color:var(--on-brand)" data-a="rdl">Download receipt (JPG)</button>
+    ${Receipt.canShareFiles() ? '<button class="send" style="background:#fff;color:var(--brand);border:1.5px solid var(--brand);margin-top:10px" data-a="rshare">Share or save to Photos</button>' : ''}</div></div>`;
+  $('bar').classList.add('hidden');
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(maybeReceipt, 300); });
+window.addEventListener('pageshow', () => setTimeout(maybeReceipt, 300));
 
 /* ---------- feedback ---------- */
 const FBK = 'fb:' + slug;
@@ -288,9 +342,12 @@ async function fbSend() {
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-a]'); if (!el) return;
   const a = el.dataset.a, id = el.dataset.id;
-  if (a === 'shut' && e.target !== el) return;
+  if ((a === 'shut' || a === 'rshut') && e.target !== el) return;
   if (a === 'inc') setQty(el.dataset.k, 1); else if (a === 'dec') setQty(el.dataset.k, -1);
   else if (a === 'open') orderSheet(); else if (a === 'close' || a === 'shut') closeSheet();
+  else if (a === 'rclose' || a === 'rshut') { try { localStorage.removeItem(PK); } catch (er) {} rcptOpen = false; closeSheet(); }
+  else if (a === 'rdl') Receipt.saveJpg(RC, 'receipt-' + (RO.code || 'order'));
+  else if (a === 'rshare') Receipt.share(RC, 'receipt-' + (RO.code || 'order'));
   else if (a === 'opt') optSheet(id);
   else if (a === 'osize') { opt.size = +el.dataset.i; optSheet(opt.id); }
   else if (a === 'oadd') { const k = +el.dataset.i, p = opt.adds.indexOf(k); if (p < 0) opt.adds.push(k); else opt.adds.splice(p, 1); opt.adds.sort((x, y) => x - y); optSheet(opt.id); }
@@ -318,7 +375,7 @@ document.addEventListener('click', (e) => {
   try { const c = JSON.parse(localStorage.getItem('cust') || '{}'); form.name = c.name || ''; form.phone = c.phone || ''; form.address = c.address || ''; } catch (e) {}
   try { const s = JSON.parse(localStorage.getItem(CK) || '{}');
     Object.entries(s).forEach(([k, q]) => { const l = line(k); if (l && l.it.is_available && q > 0) cart[k] = q; }); } catch (e) {}
-  render();
+  render(); maybeReceipt();
   try { if (!sessionStorage.getItem('sc:' + slug)) { sessionStorage.setItem('sc:' + slug, '1');
     fetch(API + '/api/public/scan/' + slug, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ t: table }) }).catch(() => {}); } } catch (e) {}
 })();

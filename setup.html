@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MenuQR – One-time setup</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#F6F3EC;color:#14211F;margin:0;padding:24px;display:flex;justify-content:center}
+.card{background:#fff;border-radius:14px;padding:22px;max-width:440px;width:100%;box-shadow:0 10px 30px -12px rgba(15,76,69,.35)}
+h1{font-size:22px;margin:0 0 6px} p{color:#5E6F6C;font-size:14px;margin:0 0 16px}
+label{display:block;font-weight:600;font-size:14px;margin-bottom:6px}
+input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:13px 14px;border:1.5px solid #E1DDD2;border-radius:10px;margin-bottom:14px}
+button{width:100%;min-height:48px;font:inherit;font-weight:600;font-size:16px;border:0;border-radius:10px;background:#0F4C45;color:#fff;cursor:pointer}
+#msg{margin-top:14px;font-size:14px}
+</style></head><body>
+<div class="card">
+  <h1>Create master admin</h1>
+  <p>Use this page only once. After the admin is created, delete this file from GitHub.</p>
+  <label for="k">Setup key</label><input id="k" type="password" autocomplete="off">
+  <label for="n">Your name</label><input id="n">
+  <label for="e">Username</label><input id="e" autocapitalize="none" spellcheck="false">
+  <label for="p">Password (min 8 characters)</label><input id="p" type="password" autocomplete="new-password">
+  <button id="go">Create admin</button>
+  <p id="msg" role="status"></p>
+</div>
+<script src="config.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+$('go').onclick=async()=>{
+  $('msg').style.color='#14211F'; $('msg').textContent='Working…';
+  try{
+    const r=await fetch(window.APP_CONFIG.API_URL+'/api/setup',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({setup_key:$('k').value,name:$('n').value,username:$('e').value,password:$('p').value})});
+    const d=await r.json();
+    $('msg').style.color=r.ok?'#0F4C45':'#B3261E';
+    $('msg').textContent=d.message||d.error||'Done';
+  }catch(e){$('msg').style.color='#B3261E';$('msg').textContent='Could not reach the server. Please check API_URL in config.js.';}
+};
+</script></body></html>
