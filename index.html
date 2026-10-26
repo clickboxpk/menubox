@@ -420,13 +420,13 @@ function importSheet(url, who) {
 const money = (n) => (S.info.currency || 'Rs') + ' ' + Number(n).toLocaleString();
 const catName = (id) => (S.cats.find((c) => c.id === id) || {}).name || 'No category';
 
-function shrink(file, max = 800) {
+function shrink(file, max = 800, quality = 0.78) {
   return new Promise((res, rej) => {
     const img = new Image(), u = URL.createObjectURL(file);
     img.onload = () => {
       const k = Math.min(1, max / Math.max(img.width, img.height));
       const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg', .78));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg', quality));
     };
     img.onerror = () => rej(new Error('This picture could not be opened.')); img.src = u;
   });
@@ -445,9 +445,9 @@ function rMenuTab() {
   return menuSeg() + `<div class="head"><h2>Menu</h2>${canImport ? '<button class="ghost sm" data-act="import-r">Import from file</button>' : ''}</div>
   <div class="chips">${chips.map(([k, n]) => `<button class="chip ${S.cat == k ? 'on' : ''}" data-act="cat-filter" data-id="${k}">${esc(n)}</button>`).join('')}</div>` +
   (list.length ? list.map((i) => `<article class="item"><div class="dish">
-    ${i.image_url ? `<img class="thumb" loading="lazy" alt="" src="${esc(API + i.image_url)}">` : `<div class="thumb">${esc(i.name.charAt(0).toUpperCase())}</div>`}
+    ${i.image_url ? `<img class="thumb" loading="lazy" alt="" src="${esc(API + i.image_url + '?t=1')}">` : `<div class="thumb">${esc(i.name.charAt(0).toUpperCase())}</div>`}
     <div style="flex:1;min-width:0"><div class="top"><h3>${esc(i.name)}</h3>${i.is_available ? '' : '<span class="badge bad">Sold out</span>'}</div>
-    <p>${esc(catName(i.category_id))}</p>
+    <p>${esc(catName(i.category_id))}${i.rating_count ? ` · ★ ${(i.rating_sum / i.rating_count).toFixed(1)} (${i.rating_count} rating${i.rating_count === 1 ? '' : 's'})` : ''}</p>
     <p class="price">${i.sizes.length ? 'From ' : ''}${esc(money(i.price))}${i.old_price ? ` <s>${esc(money(i.old_price))}</s>` : ''}</p>
     ${i.sizes.length || i.addons.length ? `<p>${i.sizes.length} size${i.sizes.length === 1 ? '' : 's'}, ${i.addons.length} extra${i.addons.length === 1 ? '' : 's'}</p>` : ''}
     ${i.tags.length ? `<div class="tags">${i.tags.map((t) => `<span>${esc(TAGN[t] || t)}</span>`).join('')}</div>` : ''}</div></div>
@@ -523,7 +523,7 @@ function itemForm(it) {
   const isNew = !it, o = it || {};
   const off = (perm) => (isNew ? (perm === 'image.upload' && !can(perm)) : !can(perm)) ? 'disabled' : '';
   const priceOff = isNew ? false : !can('price.edit');
-  let pending = null, removed = false;
+  let pending = null, pendingThumb = null, removed = false;
   const imgNow = () => pending || (removed ? '' : (o.image_url ? API + o.image_url : ''));
   openSheet(isNew ? 'New item' : 'Edit item', `
     <div class="field"><label>Item name</label><input name="name" value="${esc(o.name)}" ${off('menu.edit')}></div>
@@ -550,7 +550,7 @@ function itemForm(it) {
       if (!isNew && !off('availability.toggle')) d.is_available = f.is_available.checked;
       if (!off('menu.edit')) d.tags = [...f.querySelectorAll('[name=tag]:checked')].map((c) => c.value);
       if (!priceOff) { d.sizes = readRows('sizes'); d.addons = readRows('addons'); }
-      if (pending) d.image_url = (await api('/api/r/image', 'POST', { data: pending })).url;
+      if (pending) d.image_url = (await api('/api/r/image', 'POST', { data: pending, thumb: pendingThumb })).url;
       else if (removed) d.image_url = '';
       if (d.category_id === '') d.category_id = null; else if (d.category_id) d.category_id = Number(d.category_id);
       return isNew ? api('/api/r/items', 'POST', d) : api('/api/r/items/' + o.id, 'PUT', d);
@@ -563,7 +563,7 @@ function itemForm(it) {
   prev();
   $('imgFile').addEventListener('change', async (e) => {
     const file = e.target.files[0]; if (!file) return;
-    try { pending = await shrink(file); removed = false; prev(); } catch (er) { $('sheetErr').textContent = er.message; }
+    try { pending = await shrink(file); pendingThumb = await shrink(file, 240, 0.72); removed = false; prev(); } catch (er) { $('sheetErr').textContent = er.message; }
   });
   const del = $('imgDel'); if (del) del.addEventListener('click', () => { pending = null; removed = true; prev(); del.remove(); });
 }
