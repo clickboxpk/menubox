@@ -104,6 +104,16 @@ input[type=color]{padding:4px;height:48px}
 .banner{background:#FFF1CC;color:#6B4E00;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px;line-height:1.4}
 .banner.bad{background:#FBE4E2;color:#8A1C14}.banner button{margin-top:10px}
 .bar .r{display:flex;gap:8px}
+
+.note{font-style:italic;color:#6B4E00!important}
+.orow{display:grid;grid-template-columns:1fr 96px 44px;gap:6px;margin-bottom:6px}
+.orow button{padding:0;min-height:46px}
+.hrow2{display:grid;grid-template-columns:38px 86px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.hrow2 b{font-size:14px}.hrow2 .chk{margin:0;padding:0;font-size:13px;gap:6px}.hrow2 .chk input{width:20px;height:20px}
+.hrow2 input[type=time]{padding:8px 6px;font-size:15px}
+.tagpick{display:flex;flex-wrap:wrap;gap:4px 16px}
+.tagpick .chk{padding:6px 0}
+.item s{color:var(--muted);font-weight:400}
 </style>
 </head>
 <body>
@@ -118,7 +128,7 @@ input[type=color]{padding:4px;height:48px}
   <section class="logincard">
     <h2 style="font-size:22px;margin-bottom:16px">Sign in</h2>
     <form id="loginForm" novalidate>
-      <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="username" inputmode="email"></div>
+      <div class="field"><label for="username">Username</label><input id="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
       <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password"></div>
       <p class="err" id="err" role="alert"></p>
       <button id="submit" type="submit" style="width:100%">Sign in</button>
@@ -145,12 +155,13 @@ const API = window.APP_CONFIG.API_URL, KEY = 'menuqr_token';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PERM_LABELS = {
-  'menu.edit':'Edit item name and description','price.edit':'Change prices','image.upload':'Upload pictures',
+  'menu.edit':'Edit item name, description and tags','price.edit':'Change prices, sizes and extras','image.upload':'Upload pictures',
   'items.add':'Add new items','items.delete':'Delete items','categories.manage':'Manage categories',
   'availability.toggle':'Mark items available or sold out','whatsapp.edit':'Change WhatsApp number',
-  'theme.edit':'Change colors (Premium plan)','qr.download':'Download QR codes','analytics.view':'See scan analytics (Premium plan)'
+  'ordering.edit':'Change order types, delivery fee and minimum order','hours.edit':'Change opening hours',
+  'theme.edit':'Change colors (Premium plan)','qr.download':'Download QR codes and manage tables','analytics.view':'See statistics and feedback (Premium plan)'
 };
-const S = { me:null, rest:null, plans:[], rests:[], users:[], tab:'home', cats:[], items:[], tables:[], stats:null, info:null, cat:'all', rtab:'menu' };
+const S = { pay:{ payments:[], months:[], total_all:0, this_month:'' }, act:[], me:null, rest:null, plans:[], rests:[], users:[], tab:'home', cats:[], items:[], tables:[], stats:null, info:null, cat:'all', rtab:'menu' };
 const can = (p) => S.me.permissions.includes(p);
 
 async function api(path, method = 'GET', body) {
@@ -159,7 +170,7 @@ async function api(path, method = 'GET', body) {
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
     body: body ? JSON.stringify(body) : undefined });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(data.error || 'Kuch masla aa gaya.'), { status: res.status });
+  if (!res.ok) throw Object.assign(new Error(data.error || 'Something went wrong.'), { status: res.status });
   return data;
 }
 function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
@@ -174,7 +185,7 @@ function openSheet(title, html, onSave, extra) {
   const f = $('sheetForm');
   f.addEventListener('submit', async (e) => {
     e.preventDefault(); const b = f.querySelector('[type=submit]'); b.disabled = true; $('sheetErr').textContent = '';
-    try { await onSave(f); closeSheet(); await refresh(); toast('Saved'); }
+    try { const r = await onSave(f); closeSheet(); await refresh(); toast(typeof r === 'string' ? r : 'Saved'); }
     catch (er) { $('sheetErr').textContent = er.message; b.disabled = false; }
   });
 }
@@ -195,25 +206,37 @@ const planOpts = (sel) => S.plans.map((p) => `<option value="${p.id}" ${p.id == 
 function homeTab() {
   const active = S.rests.filter((r) => r.status === 'active').length;
   const prem = S.rests.filter((r) => r.plan_code === 'premium').length;
+  const trials = S.rests.filter((r) => r.is_trial && r.plan_state !== 'expired').length;
+  const cur = (S.pay.months.find((m) => m.ym === S.pay.this_month) || { total: 0 }).total;
   const need = S.rests.filter((r) => r.plan_code !== 'free' && ['bad', 'warn'].includes(expiry(r).c));
   return `<h2>Overview</h2><div class="stats">
     <div class="stat"><b>${S.rests.length}</b><span>Restaurants</span></div>
     <div class="stat"><b>${active}</b><span>Active</span></div>
     <div class="stat"><b>${prem}</b><span>On Premium</span></div>
-    <div class="stat"><b>${S.users.length}</b><span>Restaurant users</span></div></div>
+    <div class="stat"><b>${trials}</b><span>On free trial</span></div>
+    <div class="stat"><b>${S.users.length}</b><span>Restaurant users</span></div>
+    <div class="stat"><b>${Number(cur).toLocaleString()}</b><span>Rs collected this month</span></div></div>
     <h2 style="font-size:18px">Renewals to follow up</h2>
     ${need.length ? need.map((r) => `<div class="item"><div class="top"><h3>${esc(r.name)}</h3><span class="badge ${expiry(r).c}">${expiry(r).t}</span></div>
-      <p>${esc(r.plan_name)} plan${r.whatsapp ? ', WhatsApp ' + esc(r.whatsapp) : ''}</p>${renewActs(r)}</div>`).join('')
-      : '<div class="empty">No plans are expiring in the next 7 days.</div>'}`;
+      <p>${esc(r.plan_name)} plan${r.is_trial ? ' (free trial)' : ''}${r.whatsapp ? ', WhatsApp ' + esc(r.whatsapp) : ''}</p>${renewActs(r)}</div>`).join('')
+      : '<div class="empty">No plans are ending in the next 7 days.</div>'}
+    <h2 style="font-size:18px;margin-top:24px">Recent activity</h2>
+    ${S.act.length ? actList(S.act) : '<div class="empty">Nothing has happened yet.</div>'}`;
 }
 function restsTab() {
   return `<div class="head"><h2>Restaurants</h2><button class="sm" data-act="new-rest">Add restaurant</button></div>` +
   (S.rests.length ? S.rests.map((r) => { const e = expiry(r); return `<article class="item">
     <div class="top"><h3>${esc(r.name)}</h3><span class="badge ${r.status === 'active' ? '' : 'bad'}">${r.status === 'active' ? 'Active' : 'Suspended'}</span></div>
-    <p>Menu link: #/r/${esc(r.slug)}</p>
-    <p>${esc(r.plan_name)} plan. <span class="badge ${e.c}">${e.t}</span> ${r.plan_state === 'expired' ? '<span class="badge bad">Premium features off</span>' : ''}</p>
+    <p>Menu link name: ${esc(r.slug)}</p>
+    <p>${esc(r.plan_name)} plan${r.is_trial ? ' (free trial)' : ''}. <span class="badge ${e.c}">${e.t}</span> ${r.plan_state === 'expired' ? '<span class="badge bad">Premium features off</span>' : ''}</p>
     <p>${r.item_count} items, ${r.user_count} users, ${r.scan_count} menu views</p>
-    <div class="acts"><button class="ghost sm" data-act="edit-rest" data-id="${r.id}">Edit</button>${r.plan_code !== 'free' ? `<button class="ghost sm" data-act="renew" data-id="${r.id}">Renew</button>` : ''}${r.whatsapp && r.plan_expires_at ? `<button class="ghost sm" data-act="remind" data-id="${r.id}">Remind</button>` : ''}
+    ${r.admin_notes ? `<p class="note">Note: ${esc(r.admin_notes)}</p>` : ''}
+    <div class="acts"><button class="ghost sm" data-act="edit-rest" data-id="${r.id}">Edit</button>
+    <button class="ghost sm" data-act="pay-new" data-id="${r.id}">Payment</button>
+    ${r.plan_code !== 'free' ? `<button class="ghost sm" data-act="renew" data-id="${r.id}">Renew</button>` : ''}
+    ${r.whatsapp && r.plan_expires_at ? `<button class="ghost sm" data-act="remind" data-id="${r.id}">Remind</button>` : ''}
+    <button class="ghost sm" data-act="import-admin" data-id="${r.id}">Import menu</button>
+    <button class="ghost sm" data-act="activity" data-id="${r.id}">Activity</button>
     <button class="${r.status === 'active' ? 'danger' : 'ghost'} sm" data-act="toggle-rest" data-id="${r.id}">${r.status === 'active' ? 'Suspend' : 'Activate'}</button></div></article>`; }).join('')
   : '<div class="empty">No restaurants yet. Add your first one to get started.</div>');
 }
@@ -221,7 +244,7 @@ function usersTab() {
   return `<div class="head"><h2>Users</h2><button class="sm" data-act="new-user">Add user</button></div>` +
   (S.users.length ? S.users.map((u) => `<article class="item">
     <div class="top"><h3>${esc(u.name)}</h3><span class="badge ${u.is_active ? '' : 'bad'}">${u.is_active ? 'Active' : 'Disabled'}</span></div>
-    <p>${esc(u.email)}</p><p>Restaurant: ${esc(u.restaurant_name)}</p>
+    <p>Username: ${esc(u.username)}</p><p>Restaurant: ${esc(u.restaurant_name)}</p>
     <div class="tags">${u.permissions.map((p) => `<span>${esc(p)}</span>`).join('') || '<span>No permissions</span>'}</div>
     <div class="acts"><button class="ghost sm" data-act="edit-user" data-id="${u.id}">Edit rights</button></div></article>`).join('')
   : `<div class="empty">${S.rests.length ? 'No users yet. Add a user for a restaurant.' : 'Add a restaurant first, then create its user.'}</div>`);
@@ -238,16 +261,18 @@ function plansTab() {
 function restForm(r) {
   r = r || {};
   openSheet(r.id ? 'Edit restaurant' : 'New restaurant', `
-    <div class="field"><label>Restaurant name</label><input name="name" value="${esc(r.name)}" required></div>
-    <div class="field"><label>Menu link name</label><input name="slug" value="${esc(r.slug)}" placeholder="auto from name" autocapitalize="none">
+    <div class="field"><label>Restaurant name</label><input name="name" value="${esc(r.name)}"></div>
+    <div class="field"><label>Menu link name</label><input name="slug" value="${esc(r.slug)}" placeholder="created from the name" autocapitalize="none">
       <p class="hint">Letters, numbers and dashes. This becomes the menu address.</p></div>
     <div class="field"><label>WhatsApp number for orders</label><input name="whatsapp" value="${esc(r.whatsapp)}" inputmode="tel" placeholder="0300 1234567">
       <p class="hint">Saved in international format automatically.</p></div>
+    ${r.id ? '' : '<label class="chk"><input type="checkbox" name="trial" id="trialChk">Start with a 7-day free trial of Premium</label><p class="hint" style="margin:-4px 0 12px">The plan and date below are ignored for a trial. After 7 days the restaurant moves to Free features.</p>'}
     <div class="field"><label>Plan</label><select name="plan_id">${planOpts(r.plan_id)}</select></div>
-    <div class="field"><label>Plan valid until</label><input type="date" name="plan_expires_at" value="${esc(r.plan_expires_at)}"></div>`,
-    (f) => { const d = fv(f); return r.id ? api('/api/admin/restaurants/' + r.id, 'PUT', d) : api('/api/admin/restaurants', 'POST', d); },
+    <div class="field"><label>Plan valid until</label><input type="date" name="plan_expires_at" value="${esc(r.plan_expires_at)}"></div>
+    <div class="field"><label>Private notes</label><textarea name="admin_notes" rows="3" placeholder="Only you can see this. e.g. owner name, agreed price">${esc(r.admin_notes)}</textarea></div>`,
+    (f) => { const d = fv(f); d.trial = !!(f.trial && f.trial.checked); return r.id ? api('/api/admin/restaurants/' + r.id, 'PUT', d) : api('/api/admin/restaurants', 'POST', d); },
     r.id ? `<button type="button" class="danger" style="width:100%;margin-top:18px" data-act="del-rest" data-id="${r.id}">Delete this restaurant</button>
-            <p class="hint" style="text-align:center">Deletes its menu and users too.</p>` : '');
+            <p class="hint" style="text-align:center">Deletes its menu and users too. Payment records are kept.</p>` : '');
 }
 function userForm(u) {
   u = u || {}; const sel = u.permissions || [];
@@ -255,7 +280,7 @@ function userForm(u) {
   openSheet(u.id ? 'Edit user rights' : 'New restaurant user', `
     ${u.id ? '' : `<div class="field"><label>Restaurant</label><select name="restaurant_id">${S.rests.map((r) => `<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select></div>`}
     <div class="field"><label>Name</label><input name="name" value="${esc(u.name)}"></div>
-    ${u.id ? `<p class="hint" style="margin:-6px 0 14px">${esc(u.email)}</p>` : '<div class="field"><label>Email</label><input name="email" type="email" inputmode="email" autocapitalize="none"></div>'}
+    ${u.id ? `<p class="hint" style="margin:-6px 0 14px">Username: ${esc(u.username)}</p>` : '<div class="field"><label>Username</label><input name="username" autocapitalize="none" spellcheck="false" placeholder="e.g. alkarachi"><p class="hint">3 to 30 letters or numbers. No spaces.</p></div>'}
     <div class="field"><label>${u.id ? 'New password (leave empty to keep)' : 'Password'}</label><input name="password" type="text" autocomplete="off" placeholder="At least 8 characters"></div>
     <div class="field"><label>What can this user do?</label><div class="perms">${perms}</div>
       <button type="button" class="ghost sm" style="margin-top:8px" data-act="perm-all">Select or clear all</button></div>
@@ -278,6 +303,113 @@ function planForm(p) {
 }
 
 
+
+/* ---------- time helpers, activity, info sheet ---------- */
+const pkDay = () => new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+const pkt = (t) => new Date(new Date(t.replace(' ', 'T') + 'Z').getTime() + 5 * 3600e3).toISOString().replace('T', ' ').slice(0, 16);
+function actList(list) {
+  return (list || []).map((a) => `<div class="item"><div class="top"><h3 style="font-size:15px">${esc(a.action)}</h3><span class="hint">${esc(pkt(a.at))}</span></div>
+    <p>${esc(a.restaurant_name || '')}${a.restaurant_name ? ', ' : ''}by ${esc(a.actor_name)}</p>${a.detail ? `<p>${esc(a.detail)}</p>` : ''}</div>`).join('');
+}
+function infoSheet(title, html) {
+  $('sheetHost').innerHTML = `<div class="back" data-act="close"><div class="sheet"><h2>${esc(title)}</h2>${html}<div class="row"><button type="button" data-act="close">Close</button></div></div></div>`;
+}
+
+/* ---------- ADMIN: payments ---------- */
+const METH = { jazzcash: 'JazzCash', easypaisa: 'Easypaisa', bank: 'Bank transfer', cash: 'Cash', other: 'Other' };
+function paymentsTab() {
+  const P = S.pay, cur = P.this_month || pkDay().slice(0, 7);
+  const prev = (() => { const d = new Date(cur + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() - 1); return d.toISOString().slice(0, 7); })();
+  const mt = (k) => (P.months.find((m) => m.ym === k) || { total: 0 }).total, f = (n) => Number(n).toLocaleString();
+  return `<div class="head"><h2>Payments</h2><button class="sm" data-act="pay-new">Record payment</button></div>
+    <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat"><b style="font-size:21px">${f(mt(cur))}</b><span>This month (Rs)</span></div>
+    <div class="stat"><b style="font-size:21px">${f(mt(prev))}</b><span>Last month (Rs)</span></div>
+    <div class="stat"><b style="font-size:21px">${f(P.total_all)}</b><span>All time (Rs)</span></div></div>` +
+  (P.months.length ? `<div class="item"><h3>Month by month</h3>${P.months.map((m) => `<div class="trow"><span>${esc(m.ym)} (${m.n} payment${m.n === 1 ? '' : 's'})</span><b>Rs ${f(m.total)}</b></div>`).join('')}</div>` : '') +
+  (P.payments.length ? P.payments.map((p) => `<article class="item"><div class="top"><h3>Rs ${f(p.amount)}</h3><span class="badge">${esc(METH[p.method] || p.method)}</span></div>
+    <p>${esc(p.restaurant_name || 'Deleted restaurant')}${p.plan_name ? ', ' + esc(p.plan_name) + ' plan' : ''}</p>
+    <p>${esc(p.paid_on)}${p.months ? `, ${p.months} month${p.months === 1 ? '' : 's'} added` : ''}</p>${p.note ? `<p>${esc(p.note)}</p>` : ''}
+    <div class="acts"><button class="danger sm" data-act="pay-del" data-id="${p.id}">Delete</button></div></article>`).join('')
+    : '<div class="empty">No payments recorded yet. Tap Record payment when a restaurant pays you.</div>');
+}
+function payForm(rid) {
+  openSheet('Record payment', `
+    <div class="field"><label>Restaurant</label><select name="restaurant_id">${S.rests.map((r) => `<option value="${r.id}" ${r.id == rid ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}</select></div>
+    <div class="two"><div class="field"><label>Amount received (Rs)</label><input name="amount" inputmode="decimal"></div>
+    <div class="field"><label>Paid on</label><input type="date" name="paid_on" value="${pkDay()}"></div></div>
+    <div class="field"><label>Paid by</label><select name="method">${Object.entries(METH).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></div>
+    <div class="field"><label>Plan</label><select name="plan_id"><option value="">Keep the current plan</option>${planOpts()}</select></div>
+    <div class="field"><label>Extend the plan by</label><select name="extend_months"><option value="0">Do not change the date</option><option value="1">1 month</option><option value="3">3 months</option><option value="6">6 months</option><option value="12">1 year</option></select>
+      <p class="hint">Time is added after the current end date, or from today if the plan already ended or was a trial.</p></div>
+    <div class="field"><label>Note (optional)</label><input name="note" placeholder="e.g. JazzCash ref 12345"></div>`,
+    (f) => api('/api/admin/payments', 'POST', fv(f)));
+}
+
+/* ---------- menu import (Excel / CSV), used by admin and restaurant ---------- */
+let IMPORT_ROWS = [];
+const XLSX_URLS = ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'];
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve();
+  return new Promise((res, rej) => { let k = 0;
+    const next = () => { if (k >= XLSX_URLS.length) return rej(new Error('The Excel reader could not be loaded. Please save the file as CSV and try again.'));
+      const sc = document.createElement('script'); sc.src = XLSX_URLS[k++]; sc.onload = res; sc.onerror = next; document.head.appendChild(sc); };
+    next(); });
+}
+function parseCSV(text) {
+  text = text.replace(/^\uFEFF/, '');
+  const first = text.split(/\r?\n/)[0] || '', d = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === d) { row.push(cur); cur = ''; }
+    else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+    else if (c !== '\r') cur += c; }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+function rowsFromMatrix(m) {
+  const norm = (h) => String(h).toLowerCase().replace(/[^a-z]/g, '');
+  const map = { category: 'category', item: 'name', itemname: 'name', name: 'name', description: 'description', price: 'price', sizes: 'sizes', size: 'sizes',
+    addons: 'addons', extras: 'addons', tags: 'tags', originalprice: 'old_price', oldprice: 'old_price' };
+  const head = (m[0] || []).map((h) => map[norm(h)]);
+  if (!head.includes('name')) throw new Error('The first row must contain column names, including "Item". Download the sample file to see the format.');
+  return m.slice(1).map((r) => { const o = {}; head.forEach((k, i) => { if (k) o[k] = String(r[i] ?? '').trim(); }); return o; }).filter((o) => Object.values(o).some((v) => v));
+}
+function downloadText(name, text) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function importSheet(url, who) {
+  IMPORT_ROWS = [];
+  openSheet('Import menu' + (who ? ' for ' + who : ''), `
+    <p class="hint" style="margin-bottom:12px">Upload an Excel (.xlsx) or CSV file. Categories are created automatically. Your existing items are not changed.</p>
+    <button type="button" class="ghost sm" data-act="dl-template">Download sample file</button>
+    <div class="field" style="margin-top:14px"><label>Choose your file</label><input type="file" id="impFile" accept=".csv,.xlsx,.xls"></div>
+    <div id="impPrev"></div>
+    <p class="hint">Sizes look like <b>Half:600|Full:1100</b>. Extras look like <b>Extra cheese:50|Raita:40</b>. Tags can be spicy, veg, halal, special. At most 300 items at a time.</p>`,
+    async () => { if (!IMPORT_ROWS.length) throw new Error('Please choose a file first.');
+      const res = await api(url, 'POST', { rows: IMPORT_ROWS });
+      if (res.errors && res.errors.length) alert(`${res.added} items imported. These rows were skipped:\n\n` + res.errors.join('\n'));
+      return `${res.added} items imported`; });
+  $('sheetForm').querySelector('[type=submit]').textContent = 'Import';
+  $('impFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0], box = $('impPrev'); if (!file) return;
+    box.innerHTML = '<p class="hint">Reading the file…</p>';
+    try {
+      let m;
+      if (/\.xlsx?$/i.test(file.name)) { await loadXLSX(); const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+        m = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: '' }); }
+      else m = parseCSV(await file.text());
+      IMPORT_ROWS = rowsFromMatrix(m);
+      const cats = new Set(IMPORT_ROWS.map((r) => (r.category || '').toLowerCase()).filter(Boolean)).size;
+      box.innerHTML = IMPORT_ROWS.length ? `<div class="banner" style="background:#E8F1EF;color:#0F4C45"><b>${IMPORT_ROWS.length} items</b> found in ${cats} categor${cats === 1 ? 'y' : 'ies'}.<br>First items: ${IMPORT_ROWS.slice(0, 3).map((r) => esc(r.name)).join(', ')}${IMPORT_ROWS.length > 3 ? '…' : ''}</div>`
+        : '<p class="err">No items were found in this file.</p>';
+    } catch (er) { IMPORT_ROWS = []; box.innerHTML = `<p class="err">${esc(er.message)}</p>`; }
+  });
+}
+
 /* ---------- RESTAURANT DASHBOARD ---------- */
 const money = (n) => (S.info.currency || 'Rs') + ' ' + Number(n).toLocaleString();
 const catName = (id) => (S.cats.find((c) => c.id === id) || {}).name || 'No category';
@@ -290,22 +422,27 @@ function shrink(file, max = 800) {
       const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg', .78));
     };
-    img.onerror = () => rej(new Error('Ye picture khul nahi saki.')); img.src = u;
+    img.onerror = () => rej(new Error('This picture could not be opened.')); img.src = u;
   });
 }
 
+const TAGN = { spicy: 'Spicy', veg: 'Veg', halal: 'Halal', special: "Chef's special" };
 function rMenuTab() {
   const chips = [['all', 'All']].concat(S.cats.map((c) => [c.id, c.name]));
   const list = S.items.filter((i) => S.cat === 'all' || i.category_id == S.cat);
-  return `<div class="head"><h2>Menu</h2></div>
+  const canImport = can('items.add') && can('categories.manage');
+  return `<div class="head"><h2>Menu</h2>${canImport ? '<button class="ghost sm" data-act="import-r">Import from file</button>' : ''}</div>
   <div class="chips">${chips.map(([k, n]) => `<button class="chip ${S.cat == k ? 'on' : ''}" data-act="cat-filter" data-id="${k}">${esc(n)}</button>`).join('')}</div>` +
   (list.length ? list.map((i) => `<article class="item"><div class="dish">
     ${i.image_url ? `<img class="thumb" loading="lazy" alt="" src="${esc(API + i.image_url)}">` : `<div class="thumb">${esc(i.name.charAt(0).toUpperCase())}</div>`}
     <div style="flex:1;min-width:0"><div class="top"><h3>${esc(i.name)}</h3>${i.is_available ? '' : '<span class="badge bad">Sold out</span>'}</div>
-    <p>${esc(catName(i.category_id))}</p><p class="price">${esc(money(i.price))}</p></div></div>
+    <p>${esc(catName(i.category_id))}</p>
+    <p class="price">${i.sizes.length ? 'From ' : ''}${esc(money(i.price))}${i.old_price ? ` <s>${esc(money(i.old_price))}</s>` : ''}</p>
+    ${i.sizes.length || i.addons.length ? `<p>${i.sizes.length} size${i.sizes.length === 1 ? '' : 's'}, ${i.addons.length} extra${i.addons.length === 1 ? '' : 's'}</p>` : ''}
+    ${i.tags.length ? `<div class="tags">${i.tags.map((t) => `<span>${esc(TAGN[t] || t)}</span>`).join('')}</div>` : ''}</div></div>
     <div class="acts"><button class="ghost sm" data-act="edit-item" data-id="${i.id}">Edit</button>
     ${can('availability.toggle') ? `<button class="ghost sm" data-act="avail" data-id="${i.id}">${i.is_available ? 'Mark sold out' : 'Available again'}</button>` : ''}</div></article>`).join('')
-  : `<div class="empty">${S.items.length ? 'No items in this category.' : (can('items.add') ? 'Your menu is empty. Add your first item.' : 'No items yet.')}</div>`) +
+  : `<div class="empty">${S.items.length ? 'No items in this category.' : (can('items.add') ? 'Your menu is empty. Add your first item, or import a whole menu from Excel.' : 'No items yet.')}</div>`) +
   (can('items.add') ? `<button class="fab" data-act="new-item">Add item</button>` : '');
 }
 function rCatsTab() {
@@ -320,45 +457,97 @@ function rCatsTab() {
   : '<div class="empty">No categories yet. Add one like Starters, Mains or Drinks.</div>');
 }
 const menuLink = (slug) => location.origin + location.pathname.replace(/[^/]*$/, '') + 'menu.html#/r/' + slug;
+const DAYS = [['mon', 'Mon'], ['tue', 'Tue'], ['wed', 'Wed'], ['thu', 'Thu'], ['fri', 'Fri'], ['sat', 'Sat'], ['sun', 'Sun']];
+function syncHours() {
+  const on = $('hEn') && $('hEn').checked && can('hours.edit');
+  DAYS.forEach(([d]) => { const c = $('hc_' + d); if (!c) return; c.disabled = !on; $('ho_' + d).disabled = !on || c.checked; $('hx_' + d).disabled = !on || c.checked; });
+  const b = $('copyMon'); if (b) b.disabled = !on;
+}
 function rSettingsTab() {
-  const i = S.info, themeOn = can('theme.edit') && i.custom_theme;
-  return `<h2>Settings</h2><div class="item">
-    <div class="field"><label>WhatsApp number for orders</label><input id="sWa" inputmode="tel" value="${esc(i.whatsapp)}" ${can('whatsapp.edit') ? '' : 'disabled'} placeholder="0300 1234567">
-      <p class="hint">Customers send their order to this number.</p></div>
-    <div class="two"><div class="field"><label>Main color</label><input id="sP" type="color" value="${esc(i.theme_primary)}" ${themeOn ? '' : 'disabled'}></div>
-    <div class="field"><label>Accent color</label><input id="sA" type="color" value="${esc(i.theme_accent)}" ${themeOn ? '' : 'disabled'}></div></div>
-    ${!i.custom_theme ? '<p class="hint">Custom colors are part of the Premium plan.</p>' : (!can('theme.edit') ? '<p class="hint">You do not have permission to change colors.</p>' : '')}
-    <button style="width:100%;margin-top:12px" data-act="save-settings">Save settings</button></div>
-    <div class="item"><h3>Your plan</h3><p>${esc(i.plan)} plan. ${esc(expiry({ plan_expires_at: i.plan_expires_at }).t)}</p>
-    </div><div class="item"><h3>Your customer menu</h3><p style="word-break:break-all">${esc(menuLink(i.slug))}</p>
+  const i = S.info, themeOn = can('theme.edit') && i.custom_theme, ordOn = can('ordering.edit'), hrOn = can('hours.edit'), H = i.hours;
+  const slot = (d) => (H && H[d]) || { closed: false, open: '09:00', close: '23:00' };
+  return `<h2>Settings</h2>
+    <div class="item"><h3>WhatsApp orders</h3><div class="field" style="margin-top:10px"><label>WhatsApp number</label><input id="sWa" inputmode="tel" value="${esc(i.whatsapp)}" ${can('whatsapp.edit') ? '' : 'disabled'} placeholder="0300 1234567">
+      <p class="hint">Customers send their order to this number.</p></div></div>
+    <div class="item"><h3>Order types</h3>
+      <label class="chk"><input type="checkbox" id="oD" ${i.accept_dinein ? 'checked' : ''} ${ordOn ? '' : 'disabled'}>Dine in</label>
+      <label class="chk"><input type="checkbox" id="oT" ${i.accept_takeaway ? 'checked' : ''} ${ordOn ? '' : 'disabled'}>Takeaway</label>
+      <label class="chk"><input type="checkbox" id="oL" ${i.accept_delivery ? 'checked' : ''} ${ordOn ? '' : 'disabled'}>Delivery</label>
+      <div class="two" style="margin-top:8px"><div class="field"><label>Delivery fee (${esc(i.currency)})</label><input id="oFee" inputmode="decimal" value="${i.delivery_fee || ''}" ${ordOn ? '' : 'disabled'} placeholder="0"></div>
+      <div class="field"><label>Minimum delivery order</label><input id="oMin" inputmode="decimal" value="${i.min_order || ''}" ${ordOn ? '' : 'disabled'} placeholder="0"></div></div>
+      ${ordOn ? '' : '<p class="hint">You do not have permission to change ordering options.</p>'}</div>
+    <div class="item"><h3>Opening hours</h3>
+      <label class="chk"><input type="checkbox" id="hTemp" ${i.temp_closed ? 'checked' : ''} ${hrOn ? '' : 'disabled'}>Temporarily closed (pause ordering now)</label>
+      <label class="chk"><input type="checkbox" id="hEn" ${H ? 'checked' : ''} ${hrOn ? '' : 'disabled'}>Use opening hours</label>
+      <p class="hint" style="margin-bottom:10px">When this is off, ordering is always open. Times are Pakistan time. A closing time after midnight is fine.</p>
+      ${DAYS.map(([d, n]) => { const s = slot(d); return `<div class="hrow2"><b>${n}</b><label class="chk"><input type="checkbox" id="hc_${d}" ${s.closed ? 'checked' : ''}>Closed</label>
+        <input type="time" id="ho_${d}" value="${esc(s.open || '09:00')}"><input type="time" id="hx_${d}" value="${esc(s.close || '23:00')}"></div>`; }).join('')}
+      <button class="ghost sm" id="copyMon" data-act="copy-mon" type="button">Copy Monday to all days</button>
+      ${hrOn ? '' : '<p class="hint">You do not have permission to change opening hours.</p>'}</div>
+    <div class="item"><h3>Colors</h3><div class="two"><div class="field"><label>Main color</label><input id="sP" type="color" value="${esc(i.theme_primary)}" ${themeOn ? '' : 'disabled'}></div>
+      <div class="field"><label>Accent color</label><input id="sA" type="color" value="${esc(i.theme_accent)}" ${themeOn ? '' : 'disabled'}></div></div>
+      ${!i.custom_theme ? '<p class="hint">Custom colors are part of the Premium plan.</p>' : (!can('theme.edit') ? '<p class="hint">You do not have permission to change colors.</p>' : '')}</div>
+    <button style="width:100%;margin-bottom:14px" data-act="save-settings">Save settings</button>
+    <div class="item"><h3>Your plan</h3><p>${esc(i.plan)} plan${i.is_trial ? ' (free trial)' : ''}. ${esc(expiry({ plan_expires_at: i.plan_expires_at }).t)}</p></div>
+    <div class="item"><h3>Your customer menu</h3><p style="word-break:break-all">${esc(menuLink(i.slug))}</p>
     <div class="acts"><a href="${esc(menuLink(i.slug))}" target="_blank" rel="noopener"><button class="ghost sm" type="button">Open menu</button></a>
     <button class="ghost sm" data-act="copy-link">Copy link</button></div></div>`;
 }
 
+function addOptRow(kind, name, price) {
+  const box = $('rows_' + kind); if (!box) return;
+  const off = box.dataset.off ? 'disabled' : '';
+  box.insertAdjacentHTML('beforeend', `<div class="orow"><input class="on" placeholder="${kind === 'sizes' ? 'e.g. Half' : 'e.g. Extra cheese'}" value="${esc(name)}" ${off}>
+    <input class="op" inputmode="decimal" placeholder="Price" value="${esc(price)}" ${off}><button type="button" class="danger" data-act="rm-row" aria-label="Remove" ${off}>×</button></div>`);
+  syncPriceLock();
+}
+const readRows = (kind) => [...document.querySelectorAll('#rows_' + kind + ' .orow')].map((r) => ({ name: r.querySelector('.on').value.trim(), price: r.querySelector('.op').value }))
+  .filter((o) => o.name || o.price !== '');
+function syncPriceLock() {
+  const has = document.querySelectorAll('#rows_sizes .orow').length > 0;
+  ['price', 'old_price'].forEach((n) => { const el = document.querySelector('#sheetForm [name=' + n + ']'); if (el) el.disabled = !!el.dataset.off || has; });
+  const h = $('priceHint'); if (h) h.textContent = has ? 'The price is taken from the cheapest size.' : '';
+}
 function itemForm(it) {
   const isNew = !it, o = it || {};
   const off = (perm) => (isNew ? (perm === 'image.upload' && !can(perm)) : !can(perm)) ? 'disabled' : '';
+  const priceOff = isNew ? false : !can('price.edit');
   let pending = null, removed = false;
   const imgNow = () => pending || (removed ? '' : (o.image_url ? API + o.image_url : ''));
   openSheet(isNew ? 'New item' : 'Edit item', `
     <div class="field"><label>Item name</label><input name="name" value="${esc(o.name)}" ${off('menu.edit')}></div>
     <div class="field"><label>Description</label><input name="description" value="${esc(o.description)}" ${off('menu.edit')} placeholder="Optional, e.g. served with fries"></div>
-    <div class="two"><div class="field"><label>Price (${esc(S.info.currency)})</label><input name="price" inputmode="decimal" value="${o.price ?? ''}" ${off('price.edit')}></div>
+    <div class="two"><div class="field"><label>Price (${esc(S.info.currency)})</label><input name="price" inputmode="decimal" value="${o.sizes && o.sizes.length ? '' : (o.price ?? '')}" ${priceOff ? 'disabled data-off="1"' : ''}></div>
     <div class="field"><label>Category</label><select name="category_id" ${off('menu.edit')}><option value="">None</option>${S.cats.map((c) => `<option value="${c.id}" ${c.id === o.category_id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div></div>
+    <p class="hint" id="priceHint" style="margin:-8px 0 12px"></p>
+    <div class="field"><label>Original price (optional)</label><input name="old_price" inputmode="decimal" value="${o.old_price ?? ''}" ${priceOff ? 'disabled data-off="1"' : ''} placeholder="Shows a discount, e.g. 600">
+      <p class="hint">Enter the higher, old price. Customers see it crossed out next to the new price.</p></div>
+    <div class="field"><label>Sizes (optional)</label><div id="rows_sizes" ${priceOff ? 'data-off="1"' : ''}></div>
+      ${priceOff ? '' : '<button type="button" class="ghost sm" data-act="add-size">Add a size</button>'}
+      <p class="hint">For example Half 600 and Full 1100. Customers choose one.</p></div>
+    <div class="field"><label>Extras (optional)</label><div id="rows_addons" ${priceOff ? 'data-off="1"' : ''}></div>
+      ${priceOff ? '' : '<button type="button" class="ghost sm" data-act="add-addon">Add an extra</button>'}
+      <p class="hint">For example Extra cheese 50. Customers can pick any number of extras.</p></div>
+    <div class="field"><label>Tags</label><div class="tagpick">${Object.entries(TAGN).map(([k, n]) => `<label class="chk"><input type="checkbox" name="tag" value="${k}" ${(o.tags || []).includes(k) ? 'checked' : ''} ${off('menu.edit')}>${n}</label>`).join('')}</div></div>
     <div class="field"><label>Picture</label><div class="imgbox"><div id="imgPrev" class="thumb"></div>
       <div><input id="imgFile" type="file" accept="image/*" ${off('image.upload')} style="padding:8px">
       ${o.image_url && can('image.upload') ? '<button type="button" class="ghost sm" id="imgDel" style="margin-top:8px">Remove picture</button>' : ''}</div></div>
       <p class="hint">${can('image.upload') ? 'Pictures are made small automatically.' : 'You do not have permission to change pictures.'}</p></div>
     ${isNew ? '' : `<label class="chk"><input type="checkbox" name="is_available" ${o.is_available ? 'checked' : ''} ${off('availability.toggle')}>Available today</label>`}`,
     async (f) => {
-      const d = fv(f);
+      const d = fv(f); delete d.tag;
       if (!isNew && !off('availability.toggle')) d.is_available = f.is_available.checked;
+      if (!off('menu.edit')) d.tags = [...f.querySelectorAll('[name=tag]:checked')].map((c) => c.value);
+      if (!priceOff) { d.sizes = readRows('sizes'); d.addons = readRows('addons'); }
       if (pending) d.image_url = (await api('/api/r/image', 'POST', { data: pending })).url;
       else if (removed) d.image_url = '';
       if (d.category_id === '') d.category_id = null; else if (d.category_id) d.category_id = Number(d.category_id);
       return isNew ? api('/api/r/items', 'POST', d) : api('/api/r/items/' + o.id, 'PUT', d);
     },
     !isNew && can('items.delete') ? `<button type="button" class="danger" style="width:100%;margin-top:18px" data-act="del-item" data-id="${o.id}">Delete this item</button>` : '');
+  (o.sizes || []).forEach((x) => addOptRow('sizes', x.name, x.price));
+  (o.addons || []).forEach((x) => addOptRow('addons', x.name, x.price));
+  syncPriceLock();
   const prev = () => { const u = imgNow(); $('imgPrev').innerHTML = u ? `<img src="${esc(u)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px">` : '+'; };
   prev();
   $('imgFile').addEventListener('change', async (e) => {
@@ -379,7 +568,7 @@ const QR_URLS = ['https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/
 function loadQR() {
   if (window.qrcode) return Promise.resolve();
   return new Promise((res, rej) => { let k = 0;
-    const next = () => { if (k >= QR_URLS.length) return rej(new Error('QR library load nahi hui. Internet check karke dobara try karein.'));
+    const next = () => { if (k >= QR_URLS.length) return rej(new Error('The QR library could not be loaded. Please check your internet and try again.'));
       const sc = document.createElement('script'); sc.src = QR_URLS[k++]; sc.onload = res; sc.onerror = next; document.head.appendChild(sc); };
     next(); });
 }
@@ -436,24 +625,28 @@ function rQrTab() {
   return h + '</div>';
 }
 function rStatsTab() {
-  if (!S.info.analytics) return '<h2>Stats</h2><div class="empty">Menu view statistics are part of the Premium plan.</div>';
+  if (!S.info.analytics) return '<h2>Stats</h2><div class="empty">Menu view statistics and customer feedback are part of the Premium plan.</div>';
   const d = S.stats;
   if (d === null) return '<h2>Stats</h2><div class="empty">Loading…</div>';
   if (d === false) return '<h2>Stats</h2><div class="empty">Could not load stats. Please try again.</div>';
   const days = [...Array(14)].map((_, k) => new Date(Date.now() + 5 * 3600e3 - (13 - k) * 864e5).toISOString().slice(0, 10));
-  const map = Object.fromEntries(d.daily.map((r) => [r.day, r.n])), vals = days.map((x) => map[x] || 0), mx = Math.max(1, ...vals);
+  const map = Object.fromEntries(d.daily.map((r) => [r.day, r.n])), vals = days.map((x) => map[x] || 0), mx = Math.max(1, ...vals), fb = d.feedback;
   return `<h2>Menu views</h2><div class="stats" style="grid-template-columns:repeat(3,1fr)">
     <div class="stat"><b>${d.today}</b><span>Today</span></div><div class="stat"><b>${d.d7}</b><span>7 days</span></div><div class="stat"><b>${d.d30}</b><span>30 days</span></div></div>
     <div class="item"><h3>Last 14 days</h3><div class="bars">${vals.map((v, k) => `<div style="height:${Math.round(v / mx * 100)}%" title="${days[k]}: ${v}"></div>`).join('')}</div>
     <div class="barl">${days.map((x) => `<span>${x.slice(8)}</span>`).join('')}</div><p>${d.total} views in total since you started.</p></div>
     <div class="item"><h3>Busiest tables (30 days)</h3>${d.tables.length ? d.tables.map((t) => `<div class="trow"><span>${esc(tableName(t.label))}</span><b>${t.n} views</b></div>`).join('')
-      : '<p>No table scans yet. Table views appear once customers scan a table QR code.</p>'}</div>`;
+      : '<p>No table scans yet. Table views appear once customers scan a table QR code.</p>'}</div>
+    <div class="item"><h3>Customer feedback</h3>${fb.count ? `<p><b style="font-size:26px;color:var(--ink)">${Number(fb.avg).toFixed(1)}</b> out of 5, from ${fb.count} rating${fb.count === 1 ? '' : 's'}</p>
+      ${[5, 4, 3, 2, 1].map((n) => `<div class="trow"><span>${n} star${n === 1 ? '' : 's'}</span><b>${(fb.dist.find((x) => x.rating === n) || { n: 0 }).n}</b></div>`).join('')}
+      ${fb.latest.filter((l) => l.comment).map((l) => `<div class="trow" style="display:block"><b style="color:#B7791F">${'★'.repeat(l.rating)}</b> <small>${esc(l.day)}${l.table_label ? ', ' + esc(tableName(l.table_label)) : ''}</small><p>${esc(l.comment)}</p></div>`).join('')}`
+      : '<p>No feedback yet. Customers can rate you at the bottom of your menu.</p>'}</div>`;
 }
 function tablesForm() {
   openSheet('Add tables', `<div class="field"><label>Add one table</label><input name="label" placeholder="e.g. 7 or Room 203"></div>
     <p class="hint" style="margin:-6px 0 14px">Or add many at once:</p>
     <div class="field"><label>Number of tables</label><input name="count" inputmode="numeric" placeholder="e.g. 20 creates tables 1 to 20"></div>`,
-    (f) => { if (!f.count.value && !f.label.value.trim()) throw new Error('Table ka naam likhein ya tadaad dein.');
+    (f) => { if (!f.count.value && !f.label.value.trim()) throw new Error('Enter a table name or a number of tables.');
       return api('/api/r/tables', 'POST', f.count.value ? { count: f.count.value } : { label: f.label.value }); });
 }
 
@@ -475,17 +668,17 @@ function pwForm() {
   openSheet('Change password', `<div class="field"><label>Current password</label><input name="cur" type="password" autocomplete="current-password"></div>
     <div class="field"><label>New password</label><input name="nw" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
     <div class="field"><label>New password again</label><input name="nw2" type="password" autocomplete="new-password"></div>`,
-    async (f) => { if (f.nw.value !== f.nw2.value) throw new Error('Dono naye passwords ek jaise likhein.');
+    async (f) => { if (f.nw.value !== f.nw2.value) throw new Error('The two new passwords do not match.');
       await api('/api/auth/password', 'POST', { current: f.cur.value, next: f.nw.value }); });
 }
 function planBanner() {
   const i = S.info; if (!['soon', 'grace', 'expired'].includes(i.plan_state)) return '';
-  const left = 3 + i.days_left;
-  const msg = { soon: `Your ${i.plan} plan ends in ${i.days_left} day${i.days_left === 1 ? '' : 's'} (${i.plan_expires_at}).`,
+  const left = 3 + i.days_left, t = i.is_trial;
+  const msg = { soon: t ? `Your free trial ends in ${i.days_left} day${i.days_left === 1 ? '' : 's'} (${i.plan_expires_at}).` : `Your ${i.plan} plan ends in ${i.days_left} day${i.days_left === 1 ? '' : 's'} (${i.plan_expires_at}).`,
     grace: `Your ${i.plan} plan ended on ${i.plan_expires_at}. Premium features switch off ${left > 0 ? 'in ' + left + ' day' + (left === 1 ? '' : 's') : 'today'} unless you renew.`,
-    expired: `Your ${i.plan} plan has ended, so Premium features are off. Your menu still works for customers.` }[i.plan_state];
+    expired: t ? 'Your free trial has ended, so Premium features are off. Your menu still works for customers.' : `Your ${i.plan} plan has ended, so Premium features are off. Your menu still works for customers.` }[i.plan_state];
   const wa = (window.APP_CONFIG.SUPPORT_WHATSAPP || '').replace(/\D/g, '');
-  return `<div class="banner ${i.plan_state === 'soon' ? '' : 'bad'}">${esc(msg)}${wa ? `<br><button class="sm" data-act="contact-renew">Contact us to renew</button>` : ''}</div>`;
+  return `<div class="banner ${i.plan_state === 'soon' ? '' : 'bad'}">${esc(msg)}${wa ? `<br><button class="sm" data-act="contact-renew">${t ? 'Contact us to continue' : 'Contact us to renew'}</button>` : ''}</div>`;
 }
 
 const R_TABS = () => [['menu', 'Menu', true], ['cats', 'Categories', can('categories.manage')], ['qr', 'QR', can('qr.download')], ['stats', 'Stats', can('analytics.view')],
@@ -498,22 +691,23 @@ function renderRestaurant() {
   $('nav').innerHTML = tabs.map(([k, l]) => `<button data-act="rtab" data-id="${k}" class="${S.rtab === k ? 'on' : ''}">${l}</button>`).join('');
   $('page').innerHTML = planBanner() + { menu: rMenuTab, cats: rCatsTab, qr: rQrTab, stats: rStatsTab, settings: rSettingsTab }[S.rtab]();
   if (S.rtab === 'qr') paintMainQR();
+  if (S.rtab === 'settings') syncHours();
 }
 
 /* ---------- render ---------- */
-const TABS = [['home', 'Overview'], ['rests', 'Restaurants'], ['users', 'Users'], ['plans', 'Plans']];
+const TABS = [['home', 'Overview'], ['rests', 'Restaurants'], ['users', 'Users'], ['pay', 'Payments'], ['plans', 'Plans']];
 function render() {
   if (S.me.role === 'admin') {
     $('barTitle').textContent = 'MenuQR Admin';
     $('nav').innerHTML = TABS.map(([k, l]) => `<button data-act="tab" data-id="${k}" class="${S.tab === k ? 'on' : ''}">${l}</button>`).join('');
     $('nav').classList.remove('hidden');
-    $('page').innerHTML = { home: homeTab, rests: restsTab, users: usersTab, plans: plansTab }[S.tab]();
+    $('page').innerHTML = { home: homeTab, rests: restsTab, users: usersTab, pay: paymentsTab, plans: plansTab }[S.tab]();
   } else { renderRestaurant(); }
 }
 async function refresh() {
   if (S.me.role === 'admin') {
-    const [p, r, u] = await Promise.all([api('/api/admin/plans'), api('/api/admin/restaurants'), api('/api/admin/users')]);
-    S.plans = p.plans; S.rests = r.restaurants; S.users = u.users;
+    const [p, r, u, pay, act] = await Promise.all([api('/api/admin/plans'), api('/api/admin/restaurants'), api('/api/admin/users'), api('/api/admin/payments'), api('/api/admin/activity?limit=10')]);
+    S.plans = p.plans; S.rests = r.restaurants; S.users = u.users; S.pay = pay; S.act = act.activity;
   } else {
     const d = await api('/api/r/menu'); S.info = d.restaurant; S.cats = d.categories; S.items = d.items; S.tables = d.tables || [];
   }
@@ -567,24 +761,44 @@ document.addEventListener('click', async (e) => {
       await Promise.all([api('/api/r/categories/' + c.id, 'PUT', { sort_order: o.sort_order }), api('/api/r/categories/' + o.id, 'PUT', { sort_order: c.sort_order })]);
       await refresh(); }
     else if (act === 'del-cat') { if (confirm('Delete this category? Its items stay in the menu without a category.')) { await api('/api/r/categories/' + id, 'DELETE'); S.cat = 'all'; await refresh(); toast('Deleted'); } }
-    else if (act === 'copy-link') { try { await navigator.clipboard.writeText(menuLink(S.info.slug)); toast('Link copied'); } catch (e) { toast('Copy nahi hua, link select kar ke copy karein'); } }
+    else if (act === 'copy-link') { try { await navigator.clipboard.writeText(menuLink(S.info.slug)); toast('Link copied'); } catch (e) { toast('Could not copy. Please select the link and copy it.'); } }
     else if (act === 'save-settings') {
       const b = {}; if (can('whatsapp.edit')) b.whatsapp = $('sWa').value;
+      if (can('ordering.edit')) { b.accept_dinein = $('oD').checked; b.accept_takeaway = $('oT').checked; b.accept_delivery = $('oL').checked; b.delivery_fee = $('oFee').value; b.min_order = $('oMin').value; }
+      if (can('hours.edit')) { b.temp_closed = $('hTemp').checked;
+        b.hours = $('hEn').checked ? Object.fromEntries(DAYS.map(([d]) => [d, { closed: $('hc_' + d).checked, open: $('ho_' + d).value, close: $('hx_' + d).value }])) : null; }
       if (can('theme.edit') && S.info.custom_theme) { b.theme_primary = $('sP').value; b.theme_accent = $('sA').value; }
       await api('/api/r/settings', 'PUT', b); await refresh(); toast('Saved'); }
     else if (act === 'renew') renewForm(S.rests.find((r) => r.id == id));
     else if (act === 'remind') remind(S.rests.find((r) => r.id == id));
     else if (act === 'pw') pwForm();
     else if (act === 'contact-renew') window.open('https://wa.me/' + window.APP_CONFIG.SUPPORT_WHATSAPP.replace(/\D/g, '') + '?text=' + encodeURIComponent(`Assalam o Alaikum! I would like to renew the MenuQR plan for ${S.info.name}.`), '_blank');
+    else if (act === 'pay-new') payForm(id);
+    else if (act === 'pay-del') { if (confirm('Delete this payment record? The plan date is not changed.')) { await api('/api/admin/payments/' + id, 'DELETE'); await refresh(); toast('Deleted'); } }
+    else if (act === 'activity') { const r = S.rests.find((x) => x.id == id); const d = await api('/api/admin/activity?restaurant_id=' + id + '&limit=50');
+      infoSheet('Activity: ' + r.name, d.activity.length ? actList(d.activity) : '<div class="empty">Nothing has happened yet.</div>'); }
+    else if (act === 'import-admin') { const r = S.rests.find((x) => x.id == id); importSheet('/api/admin/restaurants/' + id + '/import', r.name); }
+    else if (act === 'import-r') importSheet('/api/r/import');
+    else if (act === 'dl-template') downloadText('menu-sample.csv', 'Category,Item,Description,Price,Sizes,Add-ons,Tags,Original price\nStarters,Chicken Samosa,Crispy and spicy,250,,,spicy,\nBBQ,Chicken Tikka,Charcoal grilled,,Half:600|Full:1100,Extra raita:40|Naan:30,"halal,special",\nDrinks,Mint Margarita,Fresh mint and lemon,180,,,veg,220\n');
+    else if (act === 'add-size') addOptRow('sizes', '', '');
+    else if (act === 'add-addon') addOptRow('addons', '', '');
+    else if (act === 'rm-row') { el.closest('.orow').remove(); syncPriceLock(); }
+    else if (act === 'copy-mon') { DAYS.slice(1).forEach(([d]) => { $('hc_' + d).checked = $('hc_mon').checked; $('ho_' + d).value = $('ho_mon').value; $('hx_' + d).value = $('hx_mon').value; }); syncHours(); }
     else if (act === 'perm-all') { const b = [...document.querySelectorAll('[name=perm]')]; const all = b.every((c) => c.checked); b.forEach((c) => c.checked = !all); }
   } catch (er) { toast(er.message); }
+});
+
+document.addEventListener('change', (e) => {
+  const id = e.target.id || '';
+  if (id === 'hEn' || id.startsWith('hc_')) syncHours();
+  if (id === 'trialChk') document.querySelectorAll('#sheetForm [name=plan_id], #sheetForm [name=plan_expires_at]').forEach((x) => { x.disabled = e.target.checked; });
 });
 
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('err').textContent = '';
   $('submit').disabled = true; $('submit').textContent = 'Signing in…';
   try {
-    const { token } = await api('/api/auth/login', 'POST', { email: $('email').value, password: $('password').value });
+    const { token } = await api('/api/auth/login', 'POST', { username: $('username').value, password: $('password').value });
     localStorage.setItem(KEY, token); $('password').value = ''; S.tab = 'home'; await boot();
   } catch (er) { $('err').textContent = er.message; }
   finally { $('submit').disabled = false; $('submit').textContent = 'Sign in'; }
