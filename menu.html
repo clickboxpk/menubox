@@ -383,7 +383,7 @@ function orderSheet() {
   const T = types(); if (!T.find((t) => t[0] === form.type)) form.type = (table && T.find((t) => t[0] === 'dinein')) ? 'dinein' : T[0][0];
   const R = D.restaurant, sub = subtotal(), fee = feeNow(), below = form.type === 'delivery' && R.min_order && sub < R.min_order, cr = chargeRows();
   const field = (id, label, extra) => `<div class="f"><label for="f_${id}">${label}</label>${extra}</div>`;
-  paintSheet('order', `<div class="back" data-a="shut"><div class="sheet" role="dialog" aria-label="Your order">
+  paintSheet('order', `<div class="back" data-a="shut"><div class="sheet rc" role="dialog" aria-label="Your order">
     <div class="hd"><h2>Your order</h2><button class="x" data-a="close">Close</button></div>
     ${lines().map((l) => `<div class="line ${l.extra ? 'ex' : ''}"><div class="n"><b>${l.extra ? '+ ' : ''}${esc(l.name)}</b><small>${l.label ? esc(l.label) + ' · ' : ''}${esc(money(l.unit))} each</small></div>
       <div class="step"><button data-a="dec" data-k="${l.k}" aria-label="Remove one">−</button><b>${l.q}</b><button data-a="inc" data-k="${l.k}" aria-label="Add one more">+</button></div></div>`).join('')}
@@ -493,8 +493,9 @@ function showReceipt(o) {
     <div class="hd"><h2>Your final order</h2><button class="x" data-a="rclose">Close</button></div>
     <p class="how" style="margin:0 0 12px;text-align:left"><b>Your order is not sent yet.</b> Tap the green button. WhatsApp opens <b>${esc(R.name)}</b>'s chat with your order already written. Just press send.${phone ? '' : ' The receipt picture is copied too, so you can paste it with Ctrl+V.'}</p>
     <img class="rimg" alt="Order receipt" src="${RC.toDataURL('image/jpeg', 0.9)}">
-    <button class="send" data-a="rwa">Send order to ${esc(R.name)} on WhatsApp</button>
+    <button class="send" data-a="rwa">Send Order on WhatsApp</button>
     <p class="how" id="rnote" role="status"></p>
+    <button class="send" style="background:var(--tint);color:var(--brand-ink);margin-top:6px" data-a="rdl">Download receipt (JPG)</button>
     ${rateBox(o)}</div></div>`;
   $('bar').classList.add('hidden');
 }
@@ -544,6 +545,7 @@ document.addEventListener('click', (e) => {
   if (a === 'inc') setQty(el.dataset.k, 1); else if (a === 'dec') setQty(el.dataset.k, -1);
   else if (a === 'open') orderSheet(); else if (a === 'close' || a === 'shut') closeSheet();
   else if (a === 'rclose' || a === 'rshut') { try { localStorage.removeItem(PK); } catch (er) {} rcptOpen = false; closeSheet(); }
+  else if (a === 'rdl') Receipt.saveJpg(RC, 'receipt-' + (RO.code || 'order'));
   else if (a === 'rwa') sendReceiptWa();
     else if (a === 'opt') optSheet(id);
   else if (a === 'oinc' || a === 'odec') { const t = el.dataset.t, k = +el.dataset.i, d = a === 'oinc' ? 1 : -1;
