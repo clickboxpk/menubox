@@ -96,7 +96,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid r
 .imgbox{display:flex;gap:12px;align-items:center}.imgbox .thumb{width:84px;height:84px}
 input:disabled,select:disabled{background:#EFECE4;color:#8A9693}
 input[type=color]{padding:4px;height:48px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
 .fab{position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;box-shadow:0 8px 20px -6px rgba(15,76,69,.6);border-radius:99px;padding:0 20px;min-height:50px}
 
 /* qr + stats + print */
@@ -131,9 +131,10 @@ button.bkbig{width:100%;min-height:60px;font-size:18px;font-weight:800;border-ra
 .note{font-style:italic;color:#6B4E00!important}
 .orow{display:grid;grid-template-columns:1fr 96px 44px;gap:6px;margin-bottom:6px}
 .orow button{padding:0;min-height:46px}
-.hrow2{display:grid;grid-template-columns:38px 86px 1fr 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.hrow2{display:grid;grid-template-columns:34px 74px minmax(0,1fr) minmax(0,1fr);gap:5px;align-items:center;margin-bottom:6px}
 .hrow2 b{font-size:14px}.hrow2 .chk{margin:0;padding:0;font-size:13px;gap:6px}.hrow2 .chk input{width:20px;height:20px}
-.hrow2 input[type=time]{padding:8px 6px;font-size:15px}
+.hrow2 input[type=time]{padding:8px 4px;font-size:14px;min-width:0}
+input[type=time],input[type=color],input[type=file]{min-width:0;max-width:100%}.item{min-width:0}
 .tagpick{display:flex;flex-wrap:wrap;gap:4px 16px}
 .tagpick .chk{padding:6px 0}
 .item s{color:var(--muted);font-weight:400}
@@ -141,7 +142,7 @@ button.bkbig{width:100%;min-height:60px;font-size:18px;font-weight:800;border-ra
 .seg2 button{flex:1;background:transparent;color:var(--muted);min-height:38px;padding:6px}
 .seg2 button:hover{background:transparent}.seg2 button.on,.seg2 button.on:hover{background:#fff;color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .crow{border:1.5px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px;background:#fff}
-.crow .cr1{display:grid;grid-template-columns:1fr 84px 96px;gap:6px}
+.crow .cr1{display:grid;grid-template-columns:minmax(0,1fr) 76px 84px;gap:6px}
 .crow .ca{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;margin-top:6px}
 .crow .ca .chk{padding:6px 0;font-size:14px;gap:7px}.crow .ca .chk input{width:20px;height:20px}
 .logoBox{display:flex;align-items:center;gap:14px;margin:10px 0}
@@ -516,7 +517,7 @@ function chargeRow(c, on) {
     <select class="ct" aria-label="Percent or fixed amount" ${d}><option value="percent" ${c.type === 'percent' ? 'selected' : ''}>%</option><option value="fixed" ${c.type === 'fixed' ? 'selected' : ''}>${esc(S.info.currency || 'Rs')}</option></select>
     <input class="cv" inputmode="decimal" placeholder="16" aria-label="Amount" value="${esc(c.value)}" ${d}></div>
     <div class="ca">${[['dinein', 'Dine in'], ['takeaway', 'Takeaway'], ['delivery', 'Delivery']].map(([k, n]) => `<label class="chk"><input type="checkbox" class="cap" value="${k}" ${ap.includes(k) ? 'checked' : ''} ${d}>${n}</label>`).join('')}
-    <button type="button" class="ghost sm" data-act="rm-charge" ${d} style="margin-left:auto">Remove</button></div></div>`;
+    <span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="sm" data-act="save-charges" ${d}>Save</button><button type="button" class="ghost sm" data-act="rm-charge" ${d}>Remove</button></span></div></div>`;
 }
 const collectCharges = () => [...document.querySelectorAll('#chargeRows .crow')].map((r) => ({ name: r.querySelector('.cn').value.trim(), type: r.querySelector('.ct').value, value: r.querySelector('.cv').value.trim(),
   applies: [...r.querySelectorAll('.cap:checked')].map((x) => x.value) })).filter((c) => c.name || c.value);
@@ -536,8 +537,8 @@ function rSettingsTab() {
     <div class="item"><h3>Taxes and extra charges</h3>
       <p class="hint" style="margin-top:0">Added on top of the items, for example GST, a service charge or packing. Customers see each charge in their order. Your plan allows up to ${i.analytics ? 6 : 2} charges${i.analytics ? '' : ' (Premium allows 6)'}.</p>
       <div id="chargeRows" data-max="${i.analytics ? 6 : 2}">${(i.charges || []).map((c) => chargeRow(c, ordOn)).join('')}</div>
-      <button class="ghost sm" type="button" data-act="add-charge" ${ordOn ? '' : 'disabled'}>Add a charge</button>
-      <p class="hint">A percent charge is worked out on the items only, not on the delivery fee. Press Save settings when you are done.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost sm" type="button" data-act="add-charge" ${ordOn ? '' : 'disabled'}>Add a charge</button><button class="sm" type="button" data-act="save-charges" ${ordOn ? '' : 'disabled'}>Save charges</button></div>
+      <p class="hint">A percent charge is worked out on the items only, not on the delivery fee. Press Save on a charge (or Save charges) when you are done.</p>
       ${ordOn ? '' : '<p class="hint">You do not have permission to change ordering options.</p>'}</div>
     <div class="item"><h3>Opening hours</h3>
       <label class="chk"><input type="checkbox" id="hTemp" ${i.temp_closed ? 'checked' : ''} ${hrOn ? '' : 'disabled'}>Temporarily closed (pause ordering now)</label>
@@ -553,6 +554,7 @@ function rSettingsTab() {
       <p class="hint">Your logo is shown at the top of your customer menu. A square picture works best. It is made small automatically and saves as soon as you choose it.</p>
       <div class="two" style="margin-top:12px"><div class="field"><label>Main color</label><input id="sP" type="color" value="${esc(i.theme_primary)}" ${themeOn ? '' : 'disabled'}></div>
         <div class="field"><label>Accent color</label><input id="sA" type="color" value="${esc(i.theme_accent)}" ${accentOn ? '' : 'disabled'}></div></div>
+      <button type="button" class="ghost sm" data-act="theme-reset" ${themeOn ? '' : 'disabled'} style="margin-top:10px">Restore default colors</button>
       <p class="hint">The main color is the color of your whole menu: the header, buttons and the order bar. Press Save settings after changing a color.${i.custom_theme ? '' : ' The accent color is part of the Premium plan.'}</p>
       ${themeOn ? '' : '<p class="hint">You do not have permission to change the logo or colors.</p>'}</div>
     <button style="width:100%;margin-bottom:14px" data-act="save-settings">Save settings</button>
@@ -1223,6 +1225,9 @@ document.addEventListener('click', async (e) => {
     else if (act === 'dl-template') downloadText('menu-sample.csv', 'Category,Item,Description,Price,Sizes,Add-ons,Tags,Original price\nStarters,Chicken Samosa,Crispy and spicy,250,,,spicy,\nBBQ,Chicken Tikka,Charcoal grilled,,Half:600|Full:1100,Extra raita:40|Naan:30,"halal,special",\nDrinks,Mint Margarita,Fresh mint and lemon,180,,,veg,220\n');
     else if (act === 'add-charge') { const box = $('chargeRows'); if (box.children.length >= +box.dataset.max) toast('Your plan allows up to ' + box.dataset.max + ' charges.'); else box.insertAdjacentHTML('beforeend', chargeRow(null, true)); }
     else if (act === 'rm-charge') el.closest('.crow').remove();
+    else if (act === 'save-charges') { await api('/api/r/settings', 'PUT', { charges: collectCharges() }); await refresh(); toast('Charges saved'); }
+    else if (act === 'theme-reset') { if (confirm('Restore the default colors for your menu?')) { const b = { theme_primary: '#0F766E' }; if (S.info.custom_theme) b.theme_accent = '#F59E0B';
+      await api('/api/r/settings', 'PUT', b); await refresh(); toast('Default colors restored'); } }
     else if (act === 'logo-del') { if (confirm('Remove your logo?')) { await api('/api/r/logo', 'DELETE'); await refresh(); toast('Logo removed'); } }
     else if (act === 'terms-go') { el.disabled = true; try { await api('/api/auth/accept-terms', 'POST', { version: S.me.terms_required }); S.me.terms_ok = true; closeSheet(); await refresh(); toast('Thank you'); } catch (er) { $('tErr').textContent = er.message; el.disabled = false; } }
     else if (act === 'add-size') addOptRow('sizes', '', '');
