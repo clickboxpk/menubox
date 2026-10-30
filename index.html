@@ -4,7 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0F4C45">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MenuQR">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>MenuQR</title>
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
+<script>if (window.top !== window.self) { document.documentElement.style.display = 'none'; try { window.top.location = window.self.location; } catch (e) {} }</script>
 <script>if(location.hash.indexOf("#/r/")===0)location.replace("menu.html"+location.hash);</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,8 +31,9 @@ button.danger{background:transparent;color:var(--err);border:1.5px solid var(--e
 button.sm{min-height:38px;padding:8px 14px;font-size:14px}
 label{display:block;font-weight:600;font-size:14px;margin:0 0 6px}
 .field{margin-bottom:14px}
-input,select{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#FCFBF8;color:var(--ink)}
-input:focus,select:focus,button:focus-visible{outline:3px solid rgba(232,163,23,.4)}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#FCFBF8;color:var(--ink)}
+textarea{resize:vertical;min-height:90px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid rgba(232,163,23,.4)}
 .hint{font-size:13px;color:var(--muted);margin-top:4px}
 .err{color:var(--err);font-size:14px;margin-bottom:12px}
 
@@ -105,6 +115,18 @@ input[type=color]{padding:4px;height:48px}
 .banner{background:#FFF1CC;color:#6B4E00;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px;line-height:1.4}
 .banner.bad{background:#FBE4E2;color:#8A1C14}.banner button{margin-top:10px}
 .bar .r{display:flex;gap:8px}
+.annban{display:flex;gap:10px;align-items:flex-start;background:#E3F0FF;color:#0B3A6B;border-radius:14px;padding:12px 8px 12px 14px;margin-bottom:14px;font-size:14.5px;line-height:1.45;border:1px solid #B9D8F7}
+.annban .am{flex:1;white-space:pre-line;overflow-wrap:anywhere}.annban .am b{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;opacity:.75;margin-bottom:2px}
+.annban button{flex:none;min-height:36px;min-width:36px;padding:0;background:transparent;color:#0B3A6B;font-size:22px;line-height:1;border-radius:99px}.annban button:hover{background:#CFE4FA}
+.instban{display:flex;gap:10px;align-items:center;background:#E8F1EF;color:#0F4C45;border-radius:14px;padding:10px 8px 10px 14px;margin-bottom:14px;font-size:14px;line-height:1.4;border:1px solid #BFD9D4}
+.instban .im{flex:1}.instban .im small{display:block;opacity:.8;font-size:12.5px}
+.instban button.sm{flex:none}.instban .x{flex:none;min-height:36px;min-width:36px;padding:0;background:transparent;color:#0F4C45;font-size:22px;line-height:1;border-radius:99px}.instban .x:hover{background:#CFE4DF}
+.logincard .instban{margin:14px 0 0}
+.chklist{max-height:200px;overflow:auto;border:1.5px solid var(--line);border-radius:12px;padding:6px 10px;background:#fff}
+.bkban{background:#C62828;color:#fff;border-radius:16px;padding:18px;margin-bottom:16px;line-height:1.45;box-shadow:0 8px 20px -10px #C62828}
+.bkban b{display:block;font-size:22px;margin-bottom:6px}.bkban span{display:block;font-size:15px;opacity:.95}
+.bkban button{margin-top:12px;background:#fff;color:#C62828;font-weight:800}.bkban button:hover{background:#FFE9E7}
+button.bkbig{width:100%;min-height:60px;font-size:18px;font-weight:800;border-radius:14px;margin-top:6px}
 
 .note{font-style:italic;color:#6B4E00!important}
 .orow{display:grid;grid-template-columns:1fr 96px 44px;gap:6px;margin-bottom:6px}
@@ -118,6 +140,14 @@ input[type=color]{padding:4px;height:48px}
 .seg2{display:flex;background:#E8E4D8;border-radius:12px;padding:4px;margin-bottom:14px;gap:4px}
 .seg2 button{flex:1;background:transparent;color:var(--muted);min-height:38px;padding:6px}
 .seg2 button:hover{background:transparent}.seg2 button.on,.seg2 button.on:hover{background:#fff;color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.crow{border:1.5px solid var(--line);border-radius:14px;padding:10px;margin-bottom:10px;background:#fff}
+.crow .cr1{display:grid;grid-template-columns:1fr 84px 96px;gap:6px}
+.crow .ca{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;margin-top:6px}
+.crow .ca .chk{padding:6px 0;font-size:14px;gap:7px}.crow .ca .chk input{width:20px;height:20px}
+.logoBox{display:flex;align-items:center;gap:14px;margin:10px 0}
+.logoBox img,.logoBox .ph{width:76px;height:76px;border-radius:18px;object-fit:cover;background:#fff;box-shadow:0 0 0 1.5px var(--line);flex:none}
+.logoBox .ph{display:grid;place-items:center;font-size:30px;font-weight:700;color:var(--brand);background:#EFECE4}
+.logoBox input[type=file]{padding:8px}
 </style>
 </head>
 <body>
@@ -137,6 +167,8 @@ input[type=color]{padding:4px;height:48px}
       <p class="err" id="err" role="alert"></p>
       <button id="submit" type="submit" style="width:100%">Sign in</button>
     </form>
+    <div id="instL"></div>
+    <p class="hint" style="margin-top:14px;text-align:center">By signing in you agree to the <a href="terms.html" target="_blank" rel="noopener">Service Agreement</a>.</p>
   </section>
 </div>
 
@@ -146,6 +178,7 @@ input[type=color]{padding:4px;height:48px}
     <div class="logo"><i><b></b><b></b><b></b><b></b><b></b><b></b></i><span id="barTitle">MenuQR</span></div>
     <div class="r"><button data-act="pw">Password</button><button data-act="logout">Sign out</button></div>
   </div>
+  <div id="instA" style="padding:12px 16px 0"></div>
   <main class="page" id="page"></main>
   <nav class="nav" id="nav"></nav>
 </div>
@@ -155,6 +188,7 @@ input[type=color]{padding:4px;height:48px}
 
 <script src="config.js"></script>
 <script src="receipt.js"></script>
+<script src="backup.js"></script>
 <script>
 const API = window.APP_CONFIG.API_URL, KEY = 'menuqr_token';
 const $ = (id) => document.getElementById(id);
@@ -163,11 +197,11 @@ const PERM_LABELS = {
   'menu.edit':'Edit item name, description and tags','price.edit':'Change prices, sizes and extras','image.upload':'Upload pictures',
   'items.add':'Add new items','items.delete':'Delete items','categories.manage':'Manage categories',
   'availability.toggle':'Mark items available or sold out','whatsapp.edit':'Change WhatsApp number',
-  'ordering.edit':'Change order types, delivery fee and minimum order','hours.edit':'Change opening hours',
-  'theme.edit':'Change colors (Premium plan)','qr.download':'Download QR codes and manage tables','analytics.view':'See statistics and feedback (Premium plan)',
-  'orders.view':'See orders, receipts and sales reports (reports need Premium)','billing.view':'See billing history and download payment receipts'
+  'ordering.edit':'Change order types, delivery fee, taxes and minimum order','hours.edit':'Change opening hours',
+  'theme.edit':'Change logo and colors','qr.download':'Download QR codes and manage tables','analytics.view':'See statistics and feedback (Premium plan)',
+  'orders.view':'See orders, receipts and sales reports (reports need Premium)','billing.view':'See billing history and download payment receipts','backup.manage':'Backup Center: download backups'
 };
-const S = { ord:{ range:'7', from:'', to:'', list:null, report:null, err:'' }, billing:null, mview:'items', pay:{ payments:[], months:[], total_all:0, this_month:'' }, act:[], me:null, rest:null, plans:[], rests:[], users:[], tab:'home', cats:[], items:[], tables:[], stats:null, info:null, cat:'all', rtab:'menu' };
+const S = { ann:{ list:[], now:'', loading:false }, annLive:[], ord:{ range:'7', from:'', to:'', list:null, report:null, err:'' }, billing:null, mview:'items', pay:{ payments:[], months:[], total_all:0, this_month:'' }, act:[], me:null, rest:null, plans:[], rests:[], users:[], tab:'home', cats:[], items:[], tables:[], stats:null, info:null, cat:'all', rtab:'menu' };
 const can = (p) => S.me.permissions.includes(p);
 
 async function api(path, method = 'GET', body) {
@@ -251,6 +285,7 @@ function usersTab() {
   (S.users.length ? S.users.map((u) => `<article class="item">
     <div class="top"><h3>${esc(u.name)}</h3><span class="badge ${u.is_active ? '' : 'bad'}">${u.is_active ? 'Active' : 'Disabled'}</span></div>
     <p>Username: ${esc(u.username)}</p><p>Restaurant: ${esc(u.restaurant_name)}</p>
+    <p>Agreement: ${u.terms_version ? 'accepted version ' + esc(u.terms_version) + ' on ' + esc(u.terms_at) + ' (UTC)' : '<b>not accepted yet</b>'}</p>
     <div class="tags">${u.permissions.map((p) => `<span>${esc(p)}</span>`).join('') || '<span>No permissions</span>'}</div>
     <div class="acts"><button class="ghost sm" data-act="edit-user" data-id="${u.id}">Edit rights</button></div></article>`).join('')
   : `<div class="empty">${S.rests.length ? 'No users yet. Add a user for a restaurant.' : 'Add a restaurant first, then create its user.'}</div>`);
@@ -474,8 +509,19 @@ function syncHours() {
   DAYS.forEach(([d]) => { const c = $('hc_' + d); if (!c) return; c.disabled = !on; $('ho_' + d).disabled = !on || c.checked; $('hx_' + d).disabled = !on || c.checked; });
   const b = $('copyMon'); if (b) b.disabled = !on;
 }
+function chargeRow(c, on) {
+  c = c || { name: '', type: 'percent', value: '', applies: ['dinein', 'takeaway'] };
+  const d = on ? '' : 'disabled', ap = c.applies || [];
+  return `<div class="crow"><div class="cr1"><input class="cn" maxlength="30" placeholder="e.g. GST or Service charge" aria-label="Charge name" value="${esc(c.name)}" ${d}>
+    <select class="ct" aria-label="Percent or fixed amount" ${d}><option value="percent" ${c.type === 'percent' ? 'selected' : ''}>%</option><option value="fixed" ${c.type === 'fixed' ? 'selected' : ''}>${esc(S.info.currency || 'Rs')}</option></select>
+    <input class="cv" inputmode="decimal" placeholder="16" aria-label="Amount" value="${esc(c.value)}" ${d}></div>
+    <div class="ca">${[['dinein', 'Dine in'], ['takeaway', 'Takeaway'], ['delivery', 'Delivery']].map(([k, n]) => `<label class="chk"><input type="checkbox" class="cap" value="${k}" ${ap.includes(k) ? 'checked' : ''} ${d}>${n}</label>`).join('')}
+    <button type="button" class="ghost sm" data-act="rm-charge" ${d} style="margin-left:auto">Remove</button></div></div>`;
+}
+const collectCharges = () => [...document.querySelectorAll('#chargeRows .crow')].map((r) => ({ name: r.querySelector('.cn').value.trim(), type: r.querySelector('.ct').value, value: r.querySelector('.cv').value.trim(),
+  applies: [...r.querySelectorAll('.cap:checked')].map((x) => x.value) })).filter((c) => c.name || c.value);
 function rSettingsTab() {
-  const i = S.info, themeOn = can('theme.edit') && i.custom_theme, ordOn = can('ordering.edit'), hrOn = can('hours.edit'), H = i.hours;
+  const i = S.info, themeOn = can('theme.edit'), accentOn = themeOn && i.custom_theme, ordOn = can('ordering.edit'), hrOn = can('hours.edit'), H = i.hours;
   const slot = (d) => (H && H[d]) || { closed: false, open: '09:00', close: '23:00' };
   return `<h2>Settings</h2>
     <div class="item"><h3>WhatsApp orders</h3><div class="field" style="margin-top:10px"><label>WhatsApp number</label><input id="sWa" inputmode="tel" value="${esc(i.whatsapp)}" ${can('whatsapp.edit') ? '' : 'disabled'} placeholder="0300 1234567">
@@ -487,6 +533,12 @@ function rSettingsTab() {
       <div class="two" style="margin-top:8px"><div class="field"><label>Delivery fee (${esc(i.currency)})</label><input id="oFee" inputmode="decimal" value="${i.delivery_fee || ''}" ${ordOn ? '' : 'disabled'} placeholder="0"></div>
       <div class="field"><label>Minimum delivery order</label><input id="oMin" inputmode="decimal" value="${i.min_order || ''}" ${ordOn ? '' : 'disabled'} placeholder="0"></div></div>
       ${ordOn ? '' : '<p class="hint">You do not have permission to change ordering options.</p>'}</div>
+    <div class="item"><h3>Taxes and extra charges</h3>
+      <p class="hint" style="margin-top:0">Added on top of the items, for example GST, a service charge or packing. Customers see each charge in their order. Your plan allows up to ${i.analytics ? 6 : 2} charges${i.analytics ? '' : ' (Premium allows 6)'}.</p>
+      <div id="chargeRows" data-max="${i.analytics ? 6 : 2}">${(i.charges || []).map((c) => chargeRow(c, ordOn)).join('')}</div>
+      <button class="ghost sm" type="button" data-act="add-charge" ${ordOn ? '' : 'disabled'}>Add a charge</button>
+      <p class="hint">A percent charge is worked out on the items only, not on the delivery fee. Press Save settings when you are done.</p>
+      ${ordOn ? '' : '<p class="hint">You do not have permission to change ordering options.</p>'}</div>
     <div class="item"><h3>Opening hours</h3>
       <label class="chk"><input type="checkbox" id="hTemp" ${i.temp_closed ? 'checked' : ''} ${hrOn ? '' : 'disabled'}>Temporarily closed (pause ordering now)</label>
       <label class="chk"><input type="checkbox" id="hEn" ${H ? 'checked' : ''} ${hrOn ? '' : 'disabled'}>Use opening hours</label>
@@ -495,9 +547,14 @@ function rSettingsTab() {
         <input type="time" id="ho_${d}" value="${esc(s.open || '09:00')}"><input type="time" id="hx_${d}" value="${esc(s.close || '23:00')}"></div>`; }).join('')}
       <button class="ghost sm" id="copyMon" data-act="copy-mon" type="button">Copy Monday to all days</button>
       ${hrOn ? '' : '<p class="hint">You do not have permission to change opening hours.</p>'}</div>
-    <div class="item"><h3>Colors</h3><div class="two"><div class="field"><label>Main color</label><input id="sP" type="color" value="${esc(i.theme_primary)}" ${themeOn ? '' : 'disabled'}></div>
-      <div class="field"><label>Accent color</label><input id="sA" type="color" value="${esc(i.theme_accent)}" ${themeOn ? '' : 'disabled'}></div></div>
-      ${!i.custom_theme ? '<p class="hint">Custom colors are part of the Premium plan.</p>' : (!can('theme.edit') ? '<p class="hint">You do not have permission to change colors.</p>' : '')}</div>
+    <div class="item"><h3>Logo and colors</h3>
+      <div class="logoBox">${i.logo_url ? `<img alt="Your logo" src="${esc(i.logo_url)}">` : `<div class="ph" aria-hidden="true">${esc(i.name.charAt(0).toUpperCase())}</div>`}
+        <div><input id="sLogo" type="file" accept="image/*" ${themeOn ? '' : 'disabled'} aria-label="Choose your logo">${i.logo_url && themeOn ? '<button type="button" class="ghost sm" data-act="logo-del" style="margin-top:8px">Remove logo</button>' : ''}</div></div>
+      <p class="hint">Your logo is shown at the top of your customer menu. A square picture works best. It is made small automatically and saves as soon as you choose it.</p>
+      <div class="two" style="margin-top:12px"><div class="field"><label>Main color</label><input id="sP" type="color" value="${esc(i.theme_primary)}" ${themeOn ? '' : 'disabled'}></div>
+        <div class="field"><label>Accent color</label><input id="sA" type="color" value="${esc(i.theme_accent)}" ${accentOn ? '' : 'disabled'}></div></div>
+      <p class="hint">The main color is the color of your whole menu: the header, buttons and the order bar. Press Save settings after changing a color.${i.custom_theme ? '' : ' The accent color is part of the Premium plan.'}</p>
+      ${themeOn ? '' : '<p class="hint">You do not have permission to change the logo or colors.</p>'}</div>
     <button style="width:100%;margin-bottom:14px" data-act="save-settings">Save settings</button>
     <div class="item"><h3>Your plan</h3><p>${esc(i.plan)} plan${i.is_trial ? ' (free trial)' : ''}. ${esc(expiry({ plan_expires_at: i.plan_expires_at }).t)}</p></div>
     ${billingCard()}<div class="item"><h3>Your customer menu</h3><p style="word-break:break-all">${esc(menuLink(i.slug))}</p>
@@ -579,7 +636,7 @@ function catForm(c) {
 const TYPEN = { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' };
 const addD = (d, n) => new Date(new Date(d + 'T00:00:00Z').getTime() + n * 864e5).toISOString().slice(0, 10);
 const cur$ = (n) => (S.info.currency || 'Rs') + ' ' + Receipt.num(n);
-const brandColor = () => (S.info.custom_theme ? S.info.theme_primary : '#0F766E');
+const brandColor = () => (S.info.theme_primary || '#0F766E');
 function rangeDates(k) {
   const t = pkDay();
   return k === 'today' ? [t, t] : k === 'custom' ? [S.ord.from, S.ord.to] : [addD(t, -({ 7: 6, 14: 13, 30: 29 }[k])), t];
@@ -615,7 +672,7 @@ function orderDoc(o) {
   return { brand: S.info.name, accent: brandColor(), title: 'Order receipt', subtitle: 'Order #' + o.code,
     meta: [['Date', Receipt.when(o.created_at)], ['Order type', TYPEN[o.order_type]], ['Table', o.table_label || ''], ['Name', o.customer_name || ''], ['Phone', o.phone || ''], ['Address', o.address || ''], ['Note', o.note || '']],
     sections: [{ title: 'Items', rows: o.items.map((i) => ({ a: i.qty + ' x ' + i.name, b: cur$(i.total), sub: i.label })) }],
-    totals: [...(o.delivery_fee ? [['Items', cur$(o.subtotal)], ['Delivery fee', cur$(o.delivery_fee)]] : []), ['Total', cur$(o.total), true]],
+    totals: [...(o.delivery_fee || (o.charges || []).length ? [['Items', cur$(o.subtotal)]] : []), ...(o.delivery_fee ? [['Delivery fee', cur$(o.delivery_fee)]] : []), ...(o.charges || []).map((c) => [c.label || c.name, cur$(c.amount)]), ['Total', cur$(o.total), true]],
     footer: 'Thank you!' };
 }
 function payDoc(p, rname) {
@@ -644,6 +701,20 @@ function orderCard(o) {
     <p class="price">${esc(cur$(o.total))}</p>
     <div class="acts"><button class="ghost sm" data-act="ord-jpg" data-id="${o.id}">Receipt (JPG)</button><button class="ghost sm" data-act="ord-print" data-id="${o.id}">Print</button></div></article>`;
 }
+function foundCard(o) {
+  const who = [o.table_label && tableName(o.table_label), o.customer_name, o.phone, o.address].filter(Boolean).join(', ');
+  return `<article class="item"><div class="top"><h3>#${esc(o.code)}</h3><span class="badge">${esc(TYPEN[o.order_type] || o.order_type)}</span></div>
+    <p>${esc(Receipt.when(o.created_at))}</p>${who ? `<p>${esc(who)}</p>` : ''}
+    ${o.items.map((i) => `<p>${i.qty} x ${esc(i.name)}${i.label ? ' (' + esc(i.label) + ')' : ''}: ${esc(cur$(i.total))}</p>`).join('')}
+    ${o.delivery_fee ? `<p>Delivery fee: ${esc(cur$(o.delivery_fee))}</p>` : ''}${(o.charges || []).map((c) => `<p>${esc(c.label || c.name)}: ${esc(cur$(c.amount))}</p>`).join('')}
+    ${o.note ? `<p>Note: ${esc(o.note)}</p>` : ''}<p class="price">Total: ${esc(cur$(o.total))}</p></article>`;
+}
+function findCard() {
+  const f = S.ord.find || { code: '', list: null };
+  return `<div class="item"><h3>Check a receipt</h3><p>A customer sends a receipt picture on WhatsApp. Type its order number here to see the real order saved in your system. If the items or the total on the picture are different, do not accept it.</p>
+    <div class="two"><div class="field" style="margin:0"><input id="ordFind" placeholder="Order number, for example K7M2P" value="${esc(f.code)}" autocomplete="off" autocapitalize="characters"></div><button class="sm" data-act="ord-find">Check</button></div>
+    ${f.list === null ? '' : f.list.length ? '<p class="hint" style="margin:10px 0 6px">This order is in your system. Compare it with the picture:</p>' + f.list.map(foundCard).join('') : '<p class="err" style="display:block;margin-top:10px">No order with this number was found. Do not accept the receipt without checking with the customer.</p>'}</div>`;
+}
 function rOrdersTab() {
   const o = S.ord, chips = [['today', 'Today'], ['7', '7 days'], ['14', '14 days'], ['30', '1 month'], ['custom', 'Custom']];
   let h = `<h2>Orders</h2><div class="chips">${chips.map(([k, n]) => `<button class="chip ${o.range === k ? 'on' : ''}" data-act="range" data-id="${k}">${n}</button>`).join('')}</div>`;
@@ -651,7 +722,7 @@ function rOrdersTab() {
     <div class="field"><label>To</label><input type="date" id="rgTo" value="${esc(o.to)}"></div></div><button class="sm" data-act="range-apply">Show</button></div>`;
   if (o.list === null) return h + '<div class="empty">Loading…</div>';
   if (o.err) return h + `<div class="empty">${esc(o.err)}</div>`;
-  return h + `<p class="hint" style="margin-bottom:10px">${esc(o.from)} to ${esc(o.to)} (Pakistan dates)</p>` + reportCard() +
+  return h + `<p class="hint" style="margin-bottom:10px">${esc(o.from)} to ${esc(o.to)} (Pakistan dates)</p>` + findCard() + pdfCard() + reportCard() +
     (o.list.length ? '<h2 style="font-size:18px;margin-top:6px">Orders</h2>' + o.list.map(orderCard).join('') + (o.list.length >= 100 ? '<p class="hint">Showing the latest 100 orders.</p>' : '')
       : '<div class="empty">No orders in this period. Orders appear here when customers send them from your menu.</div>');
 }
@@ -674,7 +745,7 @@ function loadQR() {
     next(); });
 }
 const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) > 160 ? '#14211F' : '#FFFFFF'; };
-const qrColor = () => (S.info.custom_theme ? S.info.theme_primary : '#0F766E');
+const qrColor = () => (S.info.theme_primary || '#0F766E');
 const tableName = (l) => (/^\d+$/.test(l) ? 'Table ' + l : l);
 const tableLink = (l) => menuLink(S.info.slug) + '/t/' + encodeURIComponent(l);
 
@@ -771,7 +842,7 @@ function pwForm() {
     <div class="field"><label>New password</label><input name="nw" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
     <div class="field"><label>New password again</label><input name="nw2" type="password" autocomplete="new-password"></div>`,
     async (f) => { if (f.nw.value !== f.nw2.value) throw new Error('The two new passwords do not match.');
-      await api('/api/auth/password', 'POST', { current: f.cur.value, next: f.nw.value }); });
+      const pr = await api('/api/auth/password', 'POST', { current: f.cur.value, next: f.nw.value }); if (pr.token) localStorage.setItem(KEY, pr.token); });
 }
 function planBanner() {
   const i = S.info; if (!['soon', 'grace', 'expired'].includes(i.plan_state)) return '';
@@ -783,32 +854,251 @@ function planBanner() {
   return `<div class="banner ${i.plan_state === 'soon' ? '' : 'bad'}">${esc(msg)}${wa ? `<br><button class="sm" data-act="contact-renew">${t ? 'Contact us to continue' : 'Contact us to renew'}</button>` : ''}</div>`;
 }
 
-const R_TABS = () => [['menu', 'Menu', true], ['orders', 'Orders', can('orders.view')], ['qr', 'QR', can('qr.download')], ['stats', 'Stats', can('analytics.view')], ['settings', 'Settings', true]].filter((t) => t[2]);
+const R_TABS = () => [['menu', 'Menu', true], ['orders', 'Orders', can('orders.view')], ['qr', 'QR', can('qr.download')], ['stats', 'Stats', can('analytics.view')], ['backup', 'Backup', can('backup.manage')], ['settings', 'Settings', true]].filter((t) => t[2]);
 
 function renderRestaurant() {
   $('barTitle').textContent = S.info.name;
   const tabs = R_TABS(); if (!tabs.find((t) => t[0] === S.rtab)) S.rtab = 'menu';
   $('nav').classList.remove('hidden');
   $('nav').innerHTML = tabs.map(([k, l]) => `<button data-act="rtab" data-id="${k}" class="${S.rtab === k ? 'on' : ''}">${l}</button>`).join('');
-  $('page').innerHTML = planBanner() + { menu: rMenuTab, orders: rOrdersTab, cats: rCatsTab, qr: rQrTab, stats: rStatsTab, settings: rSettingsTab }[S.rtab]();
+  $('page').innerHTML = '<div id="annHost">' + annBanner() + '</div>' + backupBanner() + planBanner() + { menu: rMenuTab, orders: rOrdersTab, cats: rCatsTab, qr: rQrTab, stats: rStatsTab, backup: rBackupTab, settings: rSettingsTab }[S.rtab]();
   if (S.rtab === 'qr') paintMainQR();
   if (S.rtab === 'settings') syncHours();
 }
 
+/* ---------- BACKUP CENTER (restaurant) + PDF reports ---------- */
+S.bk = { st: null, busy: false, msg: '' };
+const bkDays = (t) => (t ? Math.floor((Date.now() - new Date(t.replace(' ', 'T') + 'Z').getTime()) / 864e5) : null);
+const bkLast = (t) => { if (!t) return 'never'; const d = bkDays(t); return (d <= 0 ? 'today' : d === 1 ? 'yesterday' : d + ' days ago') + ' (' + pkt(t) + ')'; };
+function backupBanner() {
+  if (!can('backup.manage')) return '';
+  const t = S.info.last_backup_at, d = bkDays(t); if (t && d <= 30) return '';
+  return `<div class="bkban"><b>Your last backup: ${t ? esc(bkLast(t)) : 'never'}</b>
+    <span>Your menu, orders and settings are only safe when you keep your own copy. Backups are your own responsibility.</span>
+    ${S.rtab !== 'backup' ? '<button data-act="rtab" data-id="backup">Back up now</button>' : ''}</div>`;
+}
+function pdfCard() {
+  const prem = !!S.info.analytics;
+  return `<div class="item"><h3>PDF reports</h3><p>${prem ? 'Choose a period above, then download a PDF.' : 'Free plan: the orders PDF covers the last 7 days. Premium lets you choose any period up to 1 year and adds the sales report and the monthly accounts.'}</p>
+    <div class="acts" style="margin:0"><button class="sm" data-act="pdf-orders">Orders PDF</button>${prem ? '<button class="ghost sm" data-act="pdf-sales">Sales report PDF</button><button class="ghost sm" data-act="pdf-monthly">Monthly accounts PDF</button>' : ''}</div></div>`;
+}
+async function makePdf(kind) {
+  let [from, to] = rangeDates(S.ord.range); const prem = !!S.info.analytics;
+  if (!from || !to) throw new Error('Choose both dates first.');
+  if (!prem) { const min = addD(pkDay(), -6); if (from < min) from = min; if (to < from) to = from; }
+  toast('Making your PDF...');
+  let blob;
+  if (kind === 'orders') blob = await BK.ordersPdf(await BK.reportOrders(api, from, to), S.info, from, to, prem ? '' : 'Free plan: this report covers up to the last 7 days. Premium lets you choose any period up to 1 year.');
+  else { const r = await api('/api/r/reports?from=' + from + '&to=' + to); blob = kind === 'sales' ? await BK.salesPdf(r, S.info) : await BK.monthlyPdf(r, S.info); }
+  BK.save(blob, kind + '-report-' + from + '-to-' + to + '.pdf'); toast('Your PDF is ready');
+}
+async function loadBackup() {
+  S.bk.st = null; render();
+  try { S.bk.st = await api('/api/r/backup/status'); } catch (e) { S.bk.st = { error: e.message }; }
+  render();
+}
+function rBackupTab() {
+  const st = S.bk.st, b = S.bk; let h = '<h2>Backup Center</h2>';
+  if (!st) return h + '<div class="empty">Loading…</div>';
+  if (st.error) return h + `<div class="empty">${esc(st.error)}</div>`;
+  const prem = st.premium;
+  h += `<div class="item"><h3>Your last backup: ${esc(bkLast(st.last_backup_at))}</h3>
+    <p>Download one ZIP file with everything: your menu as a printable PDF, a full backup file that can be restored, your orders (PDF and CSV), feedback and pictures. ${prem ? 'Your plan includes the full history.' : 'Free plan: orders and feedback cover the last 31 days. Premium keeps the full history.'}</p>
+    ${st.backup_ack_at ? `<p class="hint">You confirmed on ${esc(pkt(st.backup_ack_at))} that backups are your own responsibility.</p>`
+      : `<label class="chk"><input type="checkbox" id="bkAck"> I understand that backups are my own responsibility</label>`}
+    <button class="bkbig" data-act="bk-zip" ${b.busy ? 'disabled' : ''}>${b.busy ? 'Please wait...' : 'Download full backup (ZIP)'}</button>
+    <div class="acts" style="margin:10px 0 0"><button class="ghost sm" data-act="bk-menupdf" ${b.busy ? 'disabled' : ''}>Menu PDF only</button></div>
+    <p class="hint" id="bkMsg" style="margin-top:10px">${esc(b.msg)}</p></div>`;
+  h += `<div class="item"><h3>Good to know</h3><p>Nothing is backed up automatically. Your backup is the file you download, so download one regularly (at least once a week) and keep it somewhere safe that you control. If something is ever lost, send the file to us and we can restore it.</p></div>`;
+  return h;
+}
+async function runBackupZip() {
+  const st = S.bk.st; if (S.bk.busy) return;
+  if (!st.backup_ack_at) {
+    const c = $('bkAck'); if (!c || !c.checked) return toast('Please tick the confirmation box first.');
+    await api('/api/r/backup/ack', 'POST', {}); st.backup_ack_at = new Date().toISOString().slice(0, 19).replace('T', ' '); S.info.backup_ack_at = st.backup_ack_at;
+  }
+  S.bk.busy = true; S.bk.msg = 'Starting...'; render();
+  const say = (t) => { S.bk.msg = t; const m = $('bkMsg'); if (m) m.textContent = t; };
+  try {
+    const out = await BK.restaurantZip({ api, info: S.info, premium: !!st.premium, progress: say });
+    BK.save(out.blob, out.filename);
+    await api('/api/r/backup/done', 'POST', { what: `ZIP: ${out.counts.items} items, ${out.counts.orders} orders, ${out.counts.images} pictures` });
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' '); S.info.last_backup_at = now; st.last_backup_at = now;
+    S.bk.msg = 'Done. Your backup was downloaded (' + out.filename + '). Keep it somewhere safe.';
+  } catch (e) { S.bk.msg = 'The backup could not be finished: ' + e.message; }
+  S.bk.busy = false; render();
+}
+
+/* ---------- ADMIN: backup and restore ---------- */
+S.abk = { st: null, busy: false, json: null, fname: '', mode: 'site', orders: true, images: true, users: false, skip: true, log: '', msg: '' };
+async function loadABackup() {
+  S.abk.st = null; render();
+  try { S.abk.st = await api('/api/admin/backup/status'); } catch (e) { S.abk.st = { error: e.message, restaurants: [] }; }
+  render();
+}
+const abkKey = () => 'menuqr-restore:' + (S.abk.json.created_at || '') + ':' + S.abk.mode;
+const abkOpts = () => { const site = S.abk.mode === 'site'; return { site, slug: S.abk.mode, orders: S.abk.orders, images: S.abk.images, users: site ? true : S.abk.users }; };
+const abkDone = () => { try { return JSON.parse(localStorage.getItem(abkKey()) || '[]'); } catch (e) { return []; } };
+function abkPick(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => { try { S.abk.json = BK.readBackup(String(fr.result)); S.abk.fname = f.name; S.abk.mode = 'site'; S.abk.log = ''; } catch (e) { S.abk.json = null; toast(e.message); } render(); };
+  fr.readAsText(f);
+}
+function abkSet(k, v) { S.abk[k] = v; render(); }
+function aBackupTab() {
+  const a = S.abk, st = a.st; let h = '<h2>Backup and restore</h2>';
+  if (!st) return h + '<div class="empty">Loading…</div>';
+  if (st.error) return h + `<div class="empty">${esc(st.error)}</div>`;
+  h += `<div class="item"><h3>Download a backup of the whole site</h3><p>One file with every restaurant: menus, settings, users, orders, feedback, payments and plans. It contains password hashes, so keep it private.</p>
+    <div class="acts" style="margin:0"><button class="sm" data-act="abk-dl" data-id="1" ${a.busy ? 'disabled' : ''}>With pictures</button><button class="ghost sm" data-act="abk-dl" data-id="0" ${a.busy ? 'disabled' : ''}>Without pictures</button></div>
+    <p class="hint" id="abkMsg" style="margin-top:10px">${esc(a.msg)}</p></div>`;
+  const j = a.json;
+  let r = `<div class="item"><h3>Restore from a backup file</h3><p>Choose a file made by this page or by a restaurant's Backup Center. Nothing changes until you confirm below.</p>
+    <input type="file" accept=".json,application/json" onchange="abkPick(this)" ${a.busy ? 'disabled' : ''}>`;
+  if (j) {
+    const o = abkOpts(), est = BK.estimate(j, o), list = o.site ? j.restaurants : j.restaurants.filter((x) => x.restaurant.slug === o.slug);
+    const hasImg = list.some((x) => (x.images || []).length), done = abkDone();
+    r += `<p style="margin-top:10px"><b>${esc(a.fname)}</b><br>Made ${esc(String(j.created_at || '').slice(0, 10))}. ${j.restaurants.length} restaurant${j.restaurants.length === 1 ? '' : 's'}${j.contents === 'menu-and-settings' ? ' (menu and settings only: this is the GitHub copy)' : ''}.</p>
+      <div class="field"><label>What to restore</label><select onchange="abkSet('mode', this.value)" ${a.busy ? 'disabled' : ''}>
+        <option value="site" ${o.site ? 'selected' : ''}>The whole site (${j.restaurants.length} restaurants)</option>
+        ${j.restaurants.map((x) => `<option value="${esc(x.restaurant.slug)}" ${a.mode === x.restaurant.slug ? 'selected' : ''}>Only ${esc(x.restaurant.name)}</option>`).join('')}</select></div>
+      <label class="chk"><input type="checkbox" ${a.orders ? 'checked' : ''} onchange="abkSet('orders', this.checked)"> Orders and feedback</label>
+      <label class="chk"><input type="checkbox" ${a.images && hasImg ? 'checked' : ''} ${hasImg ? '' : 'disabled'} onchange="abkSet('images', this.checked)"> Pictures ${hasImg ? '' : '(none in this file)'}</label>
+      ${o.site ? '<p class="hint">Users, plans, payments and admin accounts are restored too.</p>' : `<label class="chk"><input type="checkbox" ${a.users ? 'checked' : ''} onchange="abkSet('users', this.checked)"> The restaurant's users</label>`}
+      ${done.length ? `<label class="chk"><input type="checkbox" ${a.skip ? 'checked' : ''} onchange="abkSet('skip', this.checked)"> Skip the ${done.length} restaurant${done.length === 1 ? '' : 's'} already restored from this file in an earlier run</label>` : ''}
+      <p class="hint">${o.site ? 'The restored data replaces what is there now.' : 'The restaurant\'s menu, categories and tables are replaced. Its plan and dates are not changed.'}
+        About ${Receipt.num(est)} rows will be written. Free D1 allows about 100,000 row writes per day, shared with normal use. ${est > 80000 ? 'This is too big for one day. It will stop at the limit; run it again the next day with the same file and it continues.' : 'This fits within one day.'}</p>
+      <div class="field"><label>Type RESTORE to confirm</label><input id="abkWord" autocomplete="off" placeholder="RESTORE"></div>
+      <button class="danger" data-act="abk-go" ${a.busy ? 'disabled' : ''}>${a.busy ? 'Restoring...' : 'Start the restore'}</button>`;
+  }
+  h += r + `<pre class="hint" id="abkLog" style="white-space:pre-wrap;margin-top:10px">${esc(a.log)}</pre></div>`;
+  h += '<h2 style="font-size:18px">Restaurants</h2>' + (st.restaurants.length ? st.restaurants.map((x) => `<article class="item"><div class="top"><h3>${esc(x.name)}</h3><span class="badge ${x.backup_ack_at ? '' : 'bad'}">${x.backup_ack_at ? 'Confirmed' : 'Not confirmed'}</span></div>
+    <p>Last backup by the restaurant: ${esc(bkLast(x.last_backup_at))}</p><p>${x.backup_ack_at ? 'Backup responsibility confirmed by ' + esc(x.backup_ack_by || '') + ' on ' + esc(pkt(x.backup_ack_at)) : 'The restaurant has not confirmed the backup responsibility yet.'}</p>
+    </article>`).join('') : '<div class="empty">No restaurants yet.</div>');
+  return h;
+}
+async function abkDownload(withImages) {
+  const a = S.abk; if (a.busy) return; a.busy = true; a.msg = 'Starting...'; render();
+  const say = (t) => { a.msg = t; const m = $('abkMsg'); if (m) m.textContent = t; };
+  try { const out = await BK.siteBackup({ api, withImages, progress: say }); BK.save(out.blob, out.filename); a.msg = `Done: ${out.filename} (${out.restaurants} restaurants, ${Receipt.num(Math.round(out.blob.size / 1024))} KB). Keep it private.`; }
+  catch (e) { a.msg = 'Failed: ' + e.message; }
+  a.busy = false; render();
+}
+async function abkGo() {
+  const a = S.abk; if (a.busy || !a.json) return;
+  if ($('abkWord').value.trim() !== 'RESTORE') return toast('Type RESTORE to confirm.');
+  const o = abkOpts(), key = abkKey(); let done = abkDone();
+  a.busy = true; a.log = ''; render();
+  const log = (t) => { a.log += t + '\n'; const el = $('abkLog'); if (el) el.textContent = a.log; };
+  try {
+    await BK.restore({ api, json: a.json, o: { ...o, skip: a.skip ? new Set(done) : null, log, onDone: (slug) => { done.push(slug); try { localStorage.setItem(key, JSON.stringify(done)); } catch (e) {} } } });
+    try { localStorage.removeItem(key); } catch (e) {}
+  } catch (e) { log('Stopped: ' + e.message); log('You can run the restore again with the same file. Restaurants that already finished are skipped.'); }
+  a.busy = false; try { await refresh(); } catch (e) {} loadABackup();
+}
+/* ---------- INSTALL AS AN APP (optional; the link keeps working exactly as before) ---------- */
+let deferredInstall = null;
+const PWA_KEY = 'mq_inst_x';
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function pwaHidden() { try { const t = +localStorage.getItem(PWA_KEY) || 0; return Date.now() - t < 14 * 864e5; } catch (e) { return false; } }
+function pwaHtml() {
+  if (isStandalone() || pwaHidden()) return '';
+  if (deferredInstall) return `<div class="instban" role="region" aria-label="Install the app"><div class="im"><b>Install MenuQR as an app</b><small>Optional. You can always keep using the link.</small></div><button class="sm" data-act="pwa-install">Install</button><button class="x" data-act="pwa-x" aria-label="Hide this">&times;</button></div>`;
+  if (isIOS()) return `<div class="instban" role="region" aria-label="Install the app"><div class="im"><b>Install MenuQR as an app</b><small>In Safari tap the Share button, then "Add to Home Screen".</small></div><button class="x" data-act="pwa-x" aria-label="Hide this">&times;</button></div>`;
+  return '';
+}
+function paintInstall() { const h = pwaHtml(); ['instL', 'instA'].forEach((id) => { const el = $(id); if (el) el.innerHTML = h; }); }
+async function pwaInstall() {
+  if (!deferredInstall) return;
+  const ev = deferredInstall; deferredInstall = null;
+  try { ev.prompt(); await ev.userChoice; } catch (e) {}
+  paintInstall();
+}
+function pwaDismiss() { try { localStorage.setItem(PWA_KEY, String(Date.now())); } catch (e) {} paintInstall(); }
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; paintInstall(); });
+window.addEventListener('appinstalled', () => { deferredInstall = null; paintInstall(); toast('MenuQR is installed'); });
+paintInstall();
+if ('serviceWorker' in navigator && window.isSecureContext) window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+
+/* ---------- ANNOUNCEMENTS ---------- */
+const ANN_KEY = 'mq_ann_closed', annId = (a) => a.id + '.' + a.rev;
+function annClosed() { try { const v = JSON.parse(localStorage.getItem(ANN_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+function annBanner() {
+  return (S.annLive || []).map((a) => `<div class="annban" role="status"><div class="am"><b>Announcement</b>${esc(a.message)}</div><button type="button" data-act="ann-x" data-id="${esc(annId(a))}" aria-label="Close this announcement">&times;</button></div>`).join('');
+}
+function paintAnn() { const h = $('annHost'); if (h) h.innerHTML = annBanner(); }
+async function loadAnnLive() {
+  try {
+    const d = await api('/api/r/announcements'), closed = new Set(annClosed());
+    S.annLive = (d.announcements || []).filter((a) => !closed.has(annId(a))); paintAnn();
+  } catch (e) { /* an announcement is never important enough to break the dashboard */ }
+}
+function dismissAnn(key) {
+  const list = annClosed().filter((k) => k !== key); list.push(key);
+  try { localStorage.setItem(ANN_KEY, JSON.stringify(list.slice(-100))); } catch (e) {}
+  S.annLive = (S.annLive || []).filter((a) => annId(a) !== key); paintAnn();
+}
+async function loadAnn() { S.ann.loading = true; render(); const d = await api('/api/admin/announcements'); S.ann = { list: d.announcements, now: d.now, loading: false }; render(); }
+const annWho = (a) => a.audience === 'all' ? 'All restaurants' : a.audience === 'premium' ? 'Premium restaurants only'
+  : (() => { const n = a.restaurant_ids.map((id) => (S.rests.find((r) => r.id === id) || {}).name).filter(Boolean); return n.length ? (n.length > 3 ? n.slice(0, 3).join(', ') + ' and ' + (n.length - 3) + ' more' : n.join(', ')) : 'Selected restaurants'; })();
+function annState(a) {
+  const now = S.ann.now;
+  if (!a.is_active) return ['Stopped', 'bad']; if (a.ends_at <= now) return ['Ended', 'bad']; if (a.starts_at > now) return ['Scheduled', 'warn']; return ['Live', ''];
+}
+function annTab() {
+  const l = S.ann.list;
+  return `<div class="head"><h2>Announcements</h2><button class="sm" data-act="ann-new">New announcement</button></div>
+    <p class="hint" style="margin-bottom:12px">A live announcement shows as a banner at the top of the restaurant dashboard (all plans, free). It appears only when a restaurant opens its dashboard. Each user can close it once in their browser.</p>` +
+    (S.ann.loading && !l.length ? '<div class="empty">Loading…</div>' : l.length ? l.map((a) => { const [t, c] = annState(a); return `<article class="item">
+      <div class="top"><h3>${esc(annWho(a))}</h3><span class="badge ${c}">${t}</span></div>
+      <p style="white-space:pre-line;overflow-wrap:anywhere">${esc(a.message)}</p>
+      <p class="hint">${esc(pkt(a.starts_at))} to ${esc(pkt(a.ends_at))} (Pakistan time)</p>
+      <div class="acts"><button class="ghost sm" data-act="ann-edit" data-id="${a.id}">Edit</button>
+      <button class="ghost sm" data-act="ann-toggle" data-id="${a.id}">${a.is_active ? 'Stop' : 'Start'}</button>
+      <button class="danger sm" data-act="ann-del" data-id="${a.id}">Delete</button></div></article>`; }).join('')
+    : '<div class="empty">No announcements yet. Write the first one.</div>');
+}
+const pkLocal = (d) => new Date(d.getTime() + 5 * 3600e3).toISOString().slice(0, 16);
+const pkLocalFromUtc = (t) => pkLocal(new Date(t.replace(' ', 'T') + 'Z'));
+function annForm(a) {
+  const sel = a ? a.audience : 'all', ids = new Set(a ? a.restaurant_ids : []);
+  const start = a ? pkLocalFromUtc(a.starts_at) : pkLocal(new Date()), end = a ? pkLocalFromUtc(a.ends_at) : pkLocal(new Date(Date.now() + 7 * 864e5));
+  openSheet(a ? 'Edit announcement' : 'New announcement', `
+    <div class="field"><label>Message</label><textarea name="message" rows="4" maxlength="500" placeholder="For example: The system will be updated tonight at 3 AM. Please do not worry if it is slow for a few minutes.">${esc(a ? a.message : '')}</textarea><p class="hint">Up to 500 characters. Plain text only.</p></div>
+    <div class="field"><label>Who should see it?</label><select name="audience">
+      <option value="all" ${sel === 'all' ? 'selected' : ''}>All restaurants</option>
+      <option value="premium" ${sel === 'premium' ? 'selected' : ''}>Premium restaurants only</option>
+      <option value="selected" ${sel === 'selected' ? 'selected' : ''}>Only some restaurants</option></select></div>
+    <div class="field ${sel === 'selected' ? '' : 'hidden'}" id="annTargets"><label>Choose the restaurants</label><div class="chklist">${S.rests.map((r) => `<label class="chk"><input type="checkbox" name="rid" value="${r.id}" ${ids.has(r.id) ? 'checked' : ''}><span>${esc(r.name)}</span></label>`).join('') || '<p class="hint">No restaurants yet.</p>'}</div></div>
+    <div class="field"><label>Start (Pakistan time)</label><input type="datetime-local" name="starts_at" value="${start}"></div>
+    <div class="field"><label>End (Pakistan time)</label><input type="datetime-local" name="ends_at" value="${end}"></div>`,
+    async (f) => {
+      const b = { message: f.message.value, audience: f.audience.value, starts_at: f.starts_at.value, ends_at: f.ends_at.value,
+        restaurant_ids: [...f.querySelectorAll('[name=rid]:checked')].map((c) => +c.value) };
+      if (!b.message.trim()) throw new Error('Write the announcement message.');
+      if (!b.starts_at || !b.ends_at) throw new Error('Choose the start and end time.');
+      if (a) await api('/api/admin/announcements/' + a.id, 'PUT', b); else await api('/api/admin/announcements', 'POST', b);
+      return a ? 'Announcement saved' : 'Announcement created';
+    });
+}
 /* ---------- render ---------- */
-const TABS = [['home', 'Overview'], ['rests', 'Restaurants'], ['users', 'Users'], ['pay', 'Payments'], ['plans', 'Plans']];
+const TABS = [['home', 'Overview'], ['rests', 'Restaurants'], ['users', 'Users'], ['pay', 'Payments'], ['backup', 'Backup'], ['ann', 'Announcements'], ['plans', 'Plans']];
 function render() {
   if (S.me.role === 'admin') {
     $('barTitle').textContent = 'MenuQR Admin';
     $('nav').innerHTML = TABS.map(([k, l]) => `<button data-act="tab" data-id="${k}" class="${S.tab === k ? 'on' : ''}">${l}</button>`).join('');
     $('nav').classList.remove('hidden');
-    $('page').innerHTML = { home: homeTab, rests: restsTab, users: usersTab, pay: paymentsTab, plans: plansTab }[S.tab]();
+    $('page').innerHTML = { home: homeTab, rests: restsTab, users: usersTab, pay: paymentsTab, backup: aBackupTab, ann: annTab, plans: plansTab }[S.tab]();
   } else { renderRestaurant(); }
 }
 async function refresh() {
   if (S.me.role === 'admin') {
-    const [p, r, u, pay, act] = await Promise.all([api('/api/admin/plans'), api('/api/admin/restaurants'), api('/api/admin/users'), api('/api/admin/payments'), api('/api/admin/activity?limit=10')]);
-    S.plans = p.plans; S.rests = r.restaurants; S.users = u.users; S.pay = pay; S.act = act.activity;
+    const [p, r, u, pay, act, an] = await Promise.all([api('/api/admin/plans'), api('/api/admin/restaurants'), api('/api/admin/users'), api('/api/admin/payments'), api('/api/admin/activity?limit=10'),
+      S.tab === 'ann' ? api('/api/admin/announcements') : null]);   // announcements are loaded only while that tab is open
+    S.plans = p.plans; S.rests = r.restaurants; S.users = u.users; S.pay = pay; S.act = act.activity; if (an) S.ann = { list: an.announcements, now: an.now, loading: false };
   } else {
     const d = await api('/api/r/menu'); S.info = d.restaurant; S.cats = d.categories; S.items = d.items; S.tables = d.tables || [];
   }
@@ -817,8 +1107,33 @@ async function refresh() {
 async function boot() {
   try {
     const d = await api('/api/auth/me'); S.me = d.user; S.rest = d.restaurant;
-    view('app'); await refresh();
-  } catch (e) { localStorage.removeItem(KEY); view('login'); }
+    view('app');
+    if (S.me.role === 'restaurant' && !S.me.terms_ok) { termsGate(); return; }
+    await refresh();
+    if (S.me.role === 'restaurant') loadAnnLive();   // one small request when the dashboard opens, never repeated in the background
+  } catch (e) {
+    // Only a refused token ends the session. A bad connection must not sign anybody out (important for the installed app).
+    if (e.status === 401 || e.status === 403) localStorage.removeItem(KEY);
+    else if (localStorage.getItem(KEY)) $('err').textContent = 'Could not reach the server. Check your internet. This page will retry by itself.';
+    view('login');
+  }
+}
+window.addEventListener('online', () => { if (localStorage.getItem(KEY) && $('appView').classList.contains('hidden')) { $('err').textContent = ''; boot(); } });
+function termsGate() {
+  const brand = esc((window.APP_CONFIG && window.APP_CONFIG.BRAND) || 'MenuQR');
+  $('sheetHost').innerHTML = `<div class="back"><div class="sheet" role="dialog" aria-label="Service Agreement">
+    <h2>Service Agreement</h2>
+    <p style="margin-top:6px">Please read and accept the Service Agreement to continue.</p>
+    <div class="item" style="margin:12px 0"><b>The most important points</b><ul style="margin:8px 0 0;padding-left:20px;line-height:1.6">
+      <li>${brand} is a software tool. Your food, prices, taxes, orders and deliveries are your own responsibility.</li>
+      <li><b>Keep your password safe</b> and download your own backups regularly.</li>
+      <li>Check an order before you act on it. Fake orders and bots can happen.</li>
+      <li>The service is provided as it is. We are not responsible for losses, lost data, fake orders or downtime.</li>
+      <li>Use your customers' details only to complete their orders.</li></ul></div>
+    <p><a href="terms.html" target="_blank" rel="noopener">Read the full Service Agreement</a> (opens in a new tab)</p>
+    <label class="chk" style="align-items:flex-start"><input type="checkbox" id="tAgree" style="width:22px;height:22px;flex:none;margin-top:2px"><span>I have read the Service Agreement (version ${esc(S.me.terms_required)}) and I agree to it.</span></label>
+    <p class="err" id="tErr" role="alert"></p>
+    <div class="row"><button type="button" class="ghost" data-act="logout">Sign out</button><button type="button" id="tGo" data-act="terms-go" disabled>Accept and continue</button></div></div></div>`;
 }
 
 /* ---------- events ---------- */
@@ -828,8 +1143,15 @@ document.addEventListener('click', async (e) => {
   const id = el.dataset.id, act = el.dataset.act;
   try {
     if (act === 'close') closeSheet();
-    else if (act === 'tab') { S.tab = id; render(); window.scrollTo(0, 0); }
-    else if (act === 'logout') { localStorage.removeItem(KEY); view('login'); }
+    else if (act === 'tab') { S.tab = id; render(); window.scrollTo(0, 0); if (id === 'backup') await loadABackup(); if (id === 'ann') await loadAnn(); }
+    else if (act === 'ann-new') annForm();
+    else if (act === 'ann-edit') annForm(S.ann.list.find((a) => a.id == id));
+    else if (act === 'ann-toggle') { const a = S.ann.list.find((x) => x.id == id); await api('/api/admin/announcements/' + id, 'PUT', { is_active: !a.is_active }); await loadAnn(); toast(a.is_active ? 'Announcement stopped' : 'Announcement started'); }
+    else if (act === 'ann-del') { if (confirm('Delete this announcement?')) { await api('/api/admin/announcements/' + id, 'DELETE'); await loadAnn(); toast('Deleted'); } }
+    else if (act === 'ann-x') dismissAnn(id);
+    else if (act === 'pwa-install') await pwaInstall();
+    else if (act === 'pwa-x') pwaDismiss();
+    else if (act === 'logout') { closeSheet(); localStorage.removeItem(KEY); view('login'); }
     else if (act === 'new-rest') restForm();
     else if (act === 'edit-rest') restForm(S.rests.find((r) => r.id == id));
     else if (act === 'toggle-rest') { const r = S.rests.find((x) => x.id == id);
@@ -844,11 +1166,20 @@ document.addEventListener('click', async (e) => {
       if (id === 'stats' && S.info.analytics) { S.stats = null; render(); S.stats = await api('/api/r/analytics').catch(() => false); }
       if (id === 'settings' && can('billing.view')) { S.billing = null; render(); S.billing = await api('/api/r/billing').then((d) => d.payments).catch(() => []); }
       if (id === 'orders') { render(); await loadOrders(); return window.scrollTo(0, 0); }
+      if (id === 'backup') { render(); window.scrollTo(0, 0); return await loadBackup(); }
       render(); window.scrollTo(0, 0); }
     else if (act === 'mview') { S.mview = id; render(); }
     else if (act === 'range') { S.ord.range = id; if (id === 'custom') { if (!S.ord.from) { S.ord.to = pkDay(); S.ord.from = addD(S.ord.to, -6); } render(); } else await loadOrders(); }
     else if (act === 'range-apply') { S.ord.from = $('rgFrom').value; S.ord.to = $('rgTo').value; if (!S.ord.from || !S.ord.to) return toast('Choose both dates'); await loadOrders(); }
     else if (act === 'ord-jpg' || act === 'ord-print') { const o = S.ord.list.find((x) => x.id == id), c = Receipt.draw(orderDoc(o)); if (act === 'ord-jpg') Receipt.saveJpg(c, 'order-' + o.code); else Receipt.print([c]); }
+    else if (act === 'ord-find') { const code = $('ordFind').value.trim(); if (!code) return toast('Type the order number first.'); S.ord.find = { code, list: (await api('/api/r/orders/find?code=' + encodeURIComponent(code))).orders }; render(); }
+    else if (act === 'pdf-orders') await makePdf('orders');
+    else if (act === 'pdf-sales') await makePdf('sales');
+    else if (act === 'pdf-monthly') await makePdf('monthly');
+    else if (act === 'bk-zip') await runBackupZip();
+    else if (act === 'bk-menupdf') { toast('Making your menu PDF...'); const core = await api('/api/r/backup/core'); BK.save(await BK.menuPdf(core, S.info), 'menu-' + S.info.slug + '-' + BK.pkDay() + '.pdf'); toast('Your menu PDF is ready'); }
+    else if (act === 'abk-dl') await abkDownload(id === '1');
+    else if (act === 'abk-go') await abkGo();
     else if (act === 'rep-jpg' || act === 'rep-print') { const r = S.ord.report, c = Receipt.draw(reportDoc(r)); if (act === 'rep-jpg') Receipt.saveJpg(c, 'sales-report-' + r.from + '-to-' + r.to); else Receipt.print([c]); }
     else if (act === 'bill-jpg' || act === 'bill-print') { const pm = S.billing.find((x) => x.id == id), c = Receipt.draw(payDoc(pm, S.info.name)); if (act === 'bill-jpg') Receipt.saveJpg(c, 'payment-receipt-P' + pm.id); else Receipt.print([c]); }
     else if (act === 'pay-jpg' || act === 'pay-print') { const pm = S.pay.payments.find((x) => x.id == id), c = Receipt.draw(payDoc(pm, pm.restaurant_name || '')); if (act === 'pay-jpg') Receipt.saveJpg(c, 'payment-receipt-P' + pm.id); else Receipt.print([c]); }
@@ -874,10 +1205,10 @@ document.addEventListener('click', async (e) => {
     else if (act === 'copy-link') { try { await navigator.clipboard.writeText(menuLink(S.info.slug)); toast('Link copied'); } catch (e) { toast('Could not copy. Please select the link and copy it.'); } }
     else if (act === 'save-settings') {
       const b = {}; if (can('whatsapp.edit')) b.whatsapp = $('sWa').value;
-      if (can('ordering.edit')) { b.accept_dinein = $('oD').checked; b.accept_takeaway = $('oT').checked; b.accept_delivery = $('oL').checked; b.delivery_fee = $('oFee').value; b.min_order = $('oMin').value; }
+      if (can('ordering.edit')) { b.accept_dinein = $('oD').checked; b.accept_takeaway = $('oT').checked; b.accept_delivery = $('oL').checked; b.delivery_fee = $('oFee').value; b.min_order = $('oMin').value; b.charges = collectCharges(); }
       if (can('hours.edit')) { b.temp_closed = $('hTemp').checked;
         b.hours = $('hEn').checked ? Object.fromEntries(DAYS.map(([d]) => [d, { closed: $('hc_' + d).checked, open: $('ho_' + d).value, close: $('hx_' + d).value }])) : null; }
-      if (can('theme.edit') && S.info.custom_theme) { b.theme_primary = $('sP').value; b.theme_accent = $('sA').value; }
+      if (can('theme.edit')) { b.theme_primary = $('sP').value; if (S.info.custom_theme) b.theme_accent = $('sA').value; }
       await api('/api/r/settings', 'PUT', b); await refresh(); toast('Saved'); }
     else if (act === 'renew') renewForm(S.rests.find((r) => r.id == id));
     else if (act === 'remind') remind(S.rests.find((r) => r.id == id));
@@ -890,6 +1221,10 @@ document.addEventListener('click', async (e) => {
     else if (act === 'import-admin') { const r = S.rests.find((x) => x.id == id); importSheet('/api/admin/restaurants/' + id + '/import', r.name); }
     else if (act === 'import-r') importSheet('/api/r/import');
     else if (act === 'dl-template') downloadText('menu-sample.csv', 'Category,Item,Description,Price,Sizes,Add-ons,Tags,Original price\nStarters,Chicken Samosa,Crispy and spicy,250,,,spicy,\nBBQ,Chicken Tikka,Charcoal grilled,,Half:600|Full:1100,Extra raita:40|Naan:30,"halal,special",\nDrinks,Mint Margarita,Fresh mint and lemon,180,,,veg,220\n');
+    else if (act === 'add-charge') { const box = $('chargeRows'); if (box.children.length >= +box.dataset.max) toast('Your plan allows up to ' + box.dataset.max + ' charges.'); else box.insertAdjacentHTML('beforeend', chargeRow(null, true)); }
+    else if (act === 'rm-charge') el.closest('.crow').remove();
+    else if (act === 'logo-del') { if (confirm('Remove your logo?')) { await api('/api/r/logo', 'DELETE'); await refresh(); toast('Logo removed'); } }
+    else if (act === 'terms-go') { el.disabled = true; try { await api('/api/auth/accept-terms', 'POST', { version: S.me.terms_required }); S.me.terms_ok = true; closeSheet(); await refresh(); toast('Thank you'); } catch (er) { $('tErr').textContent = er.message; el.disabled = false; } }
     else if (act === 'add-size') addOptRow('sizes', '', '');
     else if (act === 'add-addon') addOptRow('addons', '', '');
     else if (act === 'rm-row') { el.closest('.orow').remove(); syncPriceLock(); }
@@ -898,9 +1233,32 @@ document.addEventListener('click', async (e) => {
   } catch (er) { toast(er.message); }
 });
 
+// the logo is made small here (a square-ish JPEG of about 10 to 40 KB) before it is sent
+function logoData(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 160 / Math.max(img.width, img.height)), w = Math.max(1, Math.round(img.width * k)), h = Math.max(1, Math.round(img.height * k));
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+      x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(img, 0, 0, w, h); URL.revokeObjectURL(u);
+      let q = 0.88, out = c.toDataURL('image/jpeg', q);
+      while (out.length > 55000 && q > 0.4) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+      out.length > 58000 ? rej(new Error('This picture is too detailed. Please choose a simpler logo.')) : res(out);
+    };
+    img.onerror = () => rej(new Error('This picture could not be opened.')); img.src = u;
+  });
+}
+async function uploadLogo(inp) {
+  const f = inp.files && inp.files[0]; if (!f) return;
+  try { toast('Saving your logo…'); await api('/api/r/logo', 'PUT', { data: await logoData(f) }); await refresh(); toast('Logo saved'); }
+  catch (er) { toast(er.message); inp.value = ''; }
+}
 document.addEventListener('change', (e) => {
   const id = e.target.id || '';
   if (id === 'hEn' || id.startsWith('hc_')) syncHours();
+  if (id === 'sLogo') uploadLogo(e.target);
+  if (e.target.name === 'audience' && $('annTargets')) $('annTargets').classList.toggle('hidden', e.target.value !== 'selected');
+  if (id === 'tAgree') $('tGo').disabled = !e.target.checked;
   if (id === 'trialChk') document.querySelectorAll('#sheetForm [name=plan_id], #sheetForm [name=plan_expires_at]').forEach((x) => { x.disabled = e.target.checked; });
 });
 

@@ -120,14 +120,18 @@ section{scroll-margin-top:128px}
 .stars button.on{color:var(--accent)}
 .fb textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;margin:6px 0 10px;resize:none;background:var(--bg);color:var(--ink)}
 
-/* floating cart bar */
-.cartbar{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:8;max-width:632px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;width:calc(100% - 28px);min-height:64px;padding:9px 10px 9px 20px;border-radius:24px;color:#fff;background:#17201E;box-shadow:0 20px 40px -12px rgba(0,0,0,.55)}
-@supports (backdrop-filter:blur(1px)){.cartbar{background:rgba(23,32,30,.9);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4)}}
+/* floating cart bar: strong brand colour, so the next step is obvious */
+.cartbar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:8;max-width:636px;margin:0 auto;display:flex;align-items:center;gap:12px;width:calc(100% - 24px);min-height:70px;padding:9px 9px 9px 12px;border-radius:26px;color:var(--on-brand);background:var(--brand);border:0;box-shadow:0 0 0 2px rgba(255,255,255,.28) inset,0 22px 40px -12px rgba(0,0,0,.5),0 6px 14px -4px rgba(0,0,0,.25)}
+@supports (color:color-mix(in srgb,red,blue)){.cartbar{background:linear-gradient(135deg,var(--brand),color-mix(in srgb,var(--brand) 72%,#000))}}
 .cartbar.pop{animation:pop .38s var(--ease)}
-@keyframes pop{40%{transform:translateY(-5px) scale(1.02)}}
-.cartbar span{text-align:left;font-size:13px;opacity:.95;line-height:1.25}
-.cartbar span b{display:block;font-size:18px;opacity:1}
-.cartbar i{font-style:normal;background:var(--accent);color:var(--on-accent);border-radius:16px;padding:12px 18px;font-weight:700}
+@keyframes pop{40%{transform:translateY(-6px) scale(1.025)}}
+.cb-n{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--on-brand);color:var(--brand);font-size:20px;font-weight:800}
+.cb-t{flex:1;min-width:0;text-align:left;line-height:1.2}.cb-t small{display:block;font-size:13px;opacity:.92;font-weight:600}.cb-t b{font-size:21px;font-weight:800;letter-spacing:-.01em}
+.cb-go{position:relative;flex:none;display:inline-flex;align-items:center;gap:8px;font-style:normal;font-weight:800;font-size:17px;background:var(--on-brand);color:var(--brand);border-radius:19px;padding:15px 20px}
+.cb-go svg{width:18px;height:18px}
+.cb-go::after{content:"";position:absolute;inset:0;border-radius:inherit;border:2px solid var(--on-brand);animation:ring 2.2s ease-out infinite;pointer-events:none}
+@keyframes ring{from{transform:scale(1);opacity:.85}to{transform:scale(1.22,1.45);opacity:0}}
+@media (prefers-reduced-motion:reduce){.cb-go::after{animation:none;display:none}}
 
 /* sheets */
 .back{position:fixed;inset:0;background:rgba(8,16,15,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s ease}
@@ -142,9 +146,9 @@ section{scroll-margin-top:128px}
 .line{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid var(--line)}
 .line .n{flex:1;min-width:0}.line .n b{display:block;font-weight:600}.line .n small{color:var(--muted);font-size:14px}
 .line .step{background:var(--tint);color:var(--brand-ink)}
-.seg{display:flex;gap:6px;margin:16px 0 2px;background:var(--tint);padding:4px;border-radius:16px}
-.seg button{flex:1;background:transparent;color:var(--muted);min-height:42px;padding:8px 6px;font-size:14px;border-radius:12px}
-.seg button.on{background:var(--surface);color:var(--brand-ink);box-shadow:var(--sh1)}
+.seg{display:flex;align-items:stretch;gap:8px;margin:6px 0 2px}
+.seg button{flex:1;background:var(--tint);color:var(--ink);min-height:48px;padding:8px 6px;font-size:15px;font-weight:600;border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.seg button.on{background:var(--brand);color:var(--on-brand);font-weight:800;font-size:16px;min-height:56px;box-shadow:0 8px 18px -8px var(--brand)}
 .sum{padding:14px 0 4px;font-size:15px}.sum div{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted)}
 .total{display:flex;justify-content:space-between;font-size:22px;font-weight:800;padding:6px 0 12px}
 .f{margin-top:12px}.f label{display:block;font-weight:600;font-size:14px;margin-bottom:5px}
@@ -161,6 +165,13 @@ section{scroll-margin-top:128px}
 .rate h3{font-size:17px}
 .rrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
 .rstars{display:flex;flex:none}.rstars button{background:transparent;color:#CFC9B8;font-size:26px;min-height:40px;width:34px;padding:0;line-height:1}.rstars button.on{color:var(--accent)}
+.optrow2{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:16px;padding:8px 8px 8px 14px;margin-bottom:8px;font-weight:600}
+.optrow2.on{box-shadow:inset 0 0 0 2px var(--brand);background:var(--tint)}
+.optrow2 small{display:block;color:var(--muted);font-weight:500;font-size:13.5px}
+.optrow2 .step button[disabled]{opacity:.35}
+.sub2{font-weight:500;color:var(--muted);font-size:12.5px;margin-left:4px}
+.line.ex{padding-left:16px}.line.ex .n b{font-weight:500}
+.avatar.logo{background:#fff;object-fit:cover;width:64px;height:64px;border-radius:20px;box-shadow:0 6px 18px -6px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -193,16 +204,38 @@ const save = () => { try { localStorage.setItem(CK, JSON.stringify(cart)); } cat
 const keyOf = (id, s, a) => `${id}|${s}|${a.join('.')}`;
 function line(key) {
   const [id, s, a] = key.split('|'), it = byId(id); if (!it) return null;
+  if (s === 'x') {   // an extra: it has its own quantity and is NOT multiplied by the dish quantity
+    const ad = it.addons[+a]; if (!ad) return null;
+    return { it, unit: ad.price, name: ad.name, label: 'Extra for ' + it.name, extra: true };
+  }
   const size = s === '-1' ? null : it.sizes[+s]; if (s !== '-1' && !size) return null;
-  const adds = a ? a.split('.').map((k) => it.addons[+k]) : []; if (adds.some((x) => !x)) return null;
+  const adds = a ? a.split('.').map((k) => it.addons[+k]) : []; if (adds.some((x) => !x)) return null;   // older saved carts
   const unit = (size ? size.price : it.price) + adds.reduce((t, x) => t + x.price, 0);
-  return { it, unit, label: [size && size.name, ...adds.map((x) => '+ ' + x.name)].filter(Boolean).join(', ') };
+  return { it, unit, name: it.name, label: [size && size.name, ...adds.map((x) => '+ ' + x.name)].filter(Boolean).join(', ') };
 }
-const lines = () => Object.entries(cart).map(([k, q]) => ({ k, q, ...line(k) })).filter((l) => l.it);
-const count = () => lines().reduce((a, l) => a + l.q, 0);
+// every extra is listed straight after its dish; an extra whose dish is not in the order is dropped
+function lines() {
+  const all = Object.entries(cart).map(([k, q]) => ({ k, q, ...line(k) })).filter((l) => l.it), out = [], lastOf = {};
+  all.forEach((l, i) => { if (!l.extra) lastOf[l.it.id] = i; });
+  all.forEach((l, i) => { if (!l.extra) { out.push(l); if (lastOf[l.it.id] === i) all.filter((x) => x.extra && x.it.id === l.it.id).forEach((x) => out.push(x)); } });
+  return out;
+}
+function prune() {
+  const have = new Set(Object.keys(cart).filter((k) => k.split('|')[1] !== 'x').map((k) => k.split('|')[0]));
+  Object.keys(cart).forEach((k) => { const p = k.split('|'); if (p[1] === 'x' && !have.has(p[0])) delete cart[k]; });
+}
+const count = () => lines().filter((l) => !l.extra).reduce((a, l) => a + l.q, 0);
 const subtotal = () => lines().reduce((a, l) => a + l.unit * l.q, 0);
-const itemCount = (id) => lines().filter((l) => l.it.id == id).reduce((a, l) => a + l.q, 0);
+const itemCount = (id) => lines().filter((l) => !l.extra && l.it.id == id).reduce((a, l) => a + l.q, 0);
 const feeNow = () => (form.type === 'delivery' ? D.restaurant.delivery_fee : 0);
+const r2 = (n) => Math.round(n * 100) / 100;
+// taxes and extra charges the restaurant has set up (percent charges are worked out on the items only, not on the delivery fee)
+function chargeRows() {
+  const sub = subtotal();
+  return (D.restaurant.charges || []).filter((c) => (c.applies || []).includes(form.type))
+    .map((c) => ({ label: c.label || c.name, amount: c.type === 'percent' ? r2(sub * c.value / 100) : r2(c.value) })).filter((c) => c.amount > 0);
+}
+const totalNow = () => r2(subtotal() + feeNow() + chargeRows().reduce((t, c) => t + c.amount, 0));
 
 function applyTheme(r) {
   const st = document.documentElement.style;
@@ -262,7 +295,7 @@ function render() {
   const has = (f) => D.items.some((i) => (f === 'popular' ? i.badge : f === 'offers' ? i.old_price && !i.sizes.length : i.tags.includes(f)));
   const fl = [['popular', 'Popular'], ['veg', 'Veg'], ['halal', 'Halal'], ['spicy', 'Spicy'], ['offers', 'Offers']].filter((f) => has(f[0]));
   let n = 0;
-  $('app').innerHTML = `<header class="hero"><div class="wrap"><div class="avatar" aria-hidden="true">${esc(R.name.charAt(0).toUpperCase())}</div><h1>${esc(R.name)}</h1>
+  $('app').innerHTML = `<header class="hero"><div class="wrap">${R.logo ? `<img class="avatar logo" alt="" src="${esc(R.logo)}">` : `<div class="avatar" aria-hidden="true">${esc(R.name.charAt(0).toUpperCase())}</div>`}<h1>${esc(R.name)}</h1>
     <div class="pills"><span class="pill ${isOpen() ? '' : 'closed'}"><i></i>${isOpen() ? 'Open now' : (st.text === 'Temporarily closed' ? 'Temporarily closed' : 'Closed' + (st.text ? ', ' + esc(st.text.charAt(0).toLowerCase() + st.text.slice(1)) : ''))}</span>
     ${R.rating ? `<span class="pill">★ ${R.rating.avg.toFixed(1)} (${R.rating.count})</span>` : ''}
     ${table ? `<span class="pill">${esc(tableText(table))}</span>` : ''}
@@ -298,31 +331,44 @@ function search() {
   document.querySelectorAll('.fpill').forEach((b) => b.classList.toggle('on', b.dataset.id === FILTER));
 }
 let lastN = 0;
+const GO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 function bar() {
   const n = count(), show = n && isOpen() && !$('host').innerHTML, b = $('bar');
   b.classList.toggle('hidden', !show);
-  b.innerHTML = `<span>${n} item${n === 1 ? '' : 's'} in your order<b>${esc(money(subtotal()))}</b></span><i>View order</i>`;
-  if (show && n > lastN) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+  b.setAttribute('aria-label', `View your order, ${n} item${n === 1 ? '' : 's'}, ${money(subtotal())}`);
+  b.innerHTML = `<span class="cb-n">${n}</span><span class="cb-t"><small>${n} item${n === 1 ? "" : "s"}</small><b>${esc(money(subtotal()))}</b></span><i class="cb-go">View Order${GO}</i>`;
+  if (show && lastN === 0 && n > 0) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }   // a small bounce when the first dish is added
   lastN = n;
 }
 function paintItem(id) { const el = $('c' + id), m = $('m' + id), it = byId(id); if (el) el.innerHTML = ctrl(it); if (m) m.innerHTML = mini(it); }
 function setQty(k, d) {
   const q = Math.max(0, (cart[k] || 0) + d); if (q) cart[k] = q; else delete cart[k];
-  save(); paintItem(k.split('|')[0]);
+  prune(); save(); paintItem(k.split('|')[0]);
   if ($('host').dataset.sheet === 'order') orderSheet(); else bar();
 }
 
-/* ---------- options sheet (sizes and add-ons) ---------- */
+/* ---------- sheets (re-drawn without flicker) ---------- */
+function paintSheet(kind, html) {
+  const h = $('host'), old = h.querySelector('.sheet'), top = old ? old.scrollTop : 0, same = !!old && h.dataset.sheet === kind;
+  h.dataset.sheet = kind; h.innerHTML = html;
+  if (same) { const bk = h.querySelector('.back'), sh = h.querySelector('.sheet'); bk.style.animation = 'none'; sh.style.animation = 'none'; sh.scrollTop = top; }
+}
+
+/* ---------- options sheet: every size and every extra has its own quantity ---------- */
 function optSheet(id) {
-  const i = byId(id); if (!opt || opt.id !== id) opt = { id, size: 0, adds: [] };
-  const unit = (i.sizes.length ? i.sizes[opt.size].price : i.price) + opt.adds.reduce((t, k) => t + i.addons[k].price, 0);
-  $('host').dataset.sheet = 'opt';
-  $('host').innerHTML = `<div class="back" data-a="shut"><div class="sheet" role="dialog" aria-label="${esc(i.name)}">
+  const i = byId(id); if (!opt || opt.id !== id) opt = { id, sz: {}, plain: 1, ad: {} };
+  const hasSz = i.sizes.length, sum = (o) => Object.values(o).reduce((a, b) => a + b, 0);
+  const dq = hasSz ? sum(opt.sz) : opt.plain, nAdd = sum(opt.ad), inCart = itemCount(i.id) > 0;
+  const total = (hasSz ? i.sizes.reduce((t, s, k) => t + s.price * (opt.sz[k] || 0), 0) : i.price * opt.plain) + i.addons.reduce((t, x, k) => t + x.price * (opt.ad[k] || 0), 0);
+  const ok = dq > 0 || (inCart && nAdd > 0);
+  const stepper = (t, k, q, min) => `<div class="step sm"><button type="button" data-a="odec" data-t="${t}" data-i="${k}" ${q <= min ? 'disabled' : ''} aria-label="Remove one">−</button><b>${q}</b><button type="button" data-a="oinc" data-t="${t}" data-i="${k}" aria-label="Add one more">+</button></div>`;
+  paintSheet('opt', `<div class="back" data-a="shut"><div class="sheet" role="dialog" aria-label="${esc(i.name)}">
     <div class="hd"><h2>${esc(i.name)}</h2><button class="x" data-a="close">Close</button></div>
     ${i.description ? `<p style="color:var(--muted);font-size:14px">${esc(i.description)}</p>` : ''}
-    ${i.sizes.length ? `<p class="lbl">Choose a size</p>${i.sizes.map((s, k) => `<button class="optrow ${opt.size === k ? 'on' : ''}" data-a="osize" data-i="${k}"><span>${esc(s.name)}</span><b>${esc(money(s.price))}</b></button>`).join('')}` : ''}
-    ${i.addons.length ? `<p class="lbl">Extras (optional)</p>${i.addons.map((s, k) => `<button class="optrow ${opt.adds.includes(k) ? 'on' : ''}" data-a="oadd" data-i="${k}"><span>${esc(s.name)}</span><b>+ ${esc(money(s.price))}</b></button>`).join('')}` : ''}
-    <button class="send" style="background:var(--brand);color:var(--on-brand)" data-a="oconfirm">Add to order · ${esc(money(unit))}</button></div></div>`;
+    ${hasSz ? `<p class="lbl">Choose size and quantity</p>${i.sizes.map((s, k) => `<div class="optrow2 ${opt.sz[k] ? 'on' : ''}"><span>${esc(s.name)}<small>${esc(money(s.price))}</small></span>${stepper('size', k, opt.sz[k] || 0, 0)}</div>`).join('')}`
+      : `<p class="lbl">Quantity</p><div class="optrow2 on"><span>${esc(i.name)}<small>${esc(money(i.price))}</small></span>${stepper('plain', 0, opt.plain, 1)}</div>`}
+    ${i.addons.length ? `<p class="lbl">Extras (optional)<span class="sub2">counted separately from the dish</span></p>${i.addons.map((x, k) => `<div class="optrow2 ${opt.ad[k] ? 'on' : ''}"><span>${esc(x.name)}<small>+ ${esc(money(x.price))} each</small></span>${stepper('add', k, opt.ad[k] || 0, 0)}</div>`).join('')}` : ''}
+    <button class="send" style="background:var(--brand);color:var(--on-brand)" data-a="oconfirm" ${ok ? '' : 'disabled'}>${ok ? 'Add to order · ' + esc(money(total)) : 'Choose a quantity'}</button></div></div>`);
   $('bar').classList.add('hidden');
 }
 
@@ -333,26 +379,25 @@ function orderSheet() {
   if (!count()) { closeSheet(); return; }
   readForm();
   const T = types(); if (!T.find((t) => t[0] === form.type)) form.type = (table && T.find((t) => t[0] === 'dinein')) ? 'dinein' : T[0][0];
-  const R = D.restaurant, sub = subtotal(), fee = feeNow(), below = form.type === 'delivery' && R.min_order && sub < R.min_order;
+  const R = D.restaurant, sub = subtotal(), fee = feeNow(), below = form.type === 'delivery' && R.min_order && sub < R.min_order, cr = chargeRows();
   const field = (id, label, extra) => `<div class="f"><label for="f_${id}">${label}</label>${extra}</div>`;
-  $('host').dataset.sheet = 'order';
-  $('host').innerHTML = `<div class="back" data-a="shut"><div class="sheet" role="dialog" aria-label="Your order">
+  paintSheet('order', `<div class="back" data-a="shut"><div class="sheet" role="dialog" aria-label="Your order">
     <div class="hd"><h2>Your order</h2><button class="x" data-a="close">Close</button></div>
-    ${lines().map((l) => `<div class="line"><div class="n"><b>${esc(l.it.name)}</b><small>${l.label ? esc(l.label) + ' · ' : ''}${esc(money(l.unit))} each</small></div>
+    ${lines().map((l) => `<div class="line ${l.extra ? 'ex' : ''}"><div class="n"><b>${l.extra ? '+ ' : ''}${esc(l.name)}</b><small>${l.label ? esc(l.label) + ' · ' : ''}${esc(money(l.unit))} each</small></div>
       <div class="step"><button data-a="dec" data-k="${l.k}" aria-label="Remove one">−</button><b>${l.q}</b><button data-a="inc" data-k="${l.k}" aria-label="Add one more">+</button></div></div>`).join('')}
-    ${T.length > 1 ? `<div class="seg">${T.map((t) => `<button class="${form.type === t[0] ? 'on' : ''}" data-a="otype" data-id="${t[0]}">${t[1]}</button>`).join('')}</div>` : ''}
-    <div class="sum"><div><span>Items</span><span>${esc(money(sub))}</span></div>${fee ? `<div><span>Delivery fee</span><span>${esc(money(fee))}</span></div>` : ''}</div>
-    <div class="total"><span>Total</span><span>${esc(money(sub + fee))}</span></div>
+    ${T.length > 1 ? `<p class="lbl" style="margin-top:18px">How would you like your order?</p><div class="seg" style="margin-top:0">${T.map((t) => `<button class="${form.type === t[0] ? 'on' : ''}" data-a="otype" data-id="${t[0]}" aria-pressed="${form.type === t[0]}">${t[1]}</button>`).join('')}</div>` : ''}
+    <div class="sum"><div><span>Items</span><span>${esc(money(sub))}</span></div>${fee ? `<div><span>Delivery fee</span><span>${esc(money(fee))}</span></div>` : ''}${cr.map((c) => `<div><span>${esc(c.label)}</span><span>${esc(money(c.amount))}</span></div>`).join('')}</div>
+    <div class="total"><span>Total</span><span>${esc(money(totalNow()))}</span></div>
     ${below ? `<p class="warn">The minimum order for delivery is ${esc(money(R.min_order))}. Please add ${esc(money(R.min_order - sub))} more.</p>` : ''}
     ${field('name', 'Your name' + (form.type === 'delivery' ? '' : ' (optional)'), `<input id="f_name" value="${esc(form.name)}" autocomplete="name">`)}
     ${form.type === 'dinein' ? field('table', 'Table or room number (optional)', `<input id="f_table" value="${esc(form.table)}">`) : ''}
     ${form.type !== 'dinein' ? field('phone', 'Phone number' + (form.type === 'delivery' ? '' : ' (optional)'), `<input id="f_phone" type="tel" inputmode="tel" value="${esc(form.phone)}" autocomplete="tel">`) : ''}
     ${form.type === 'delivery' ? field('address', 'Delivery address', `<textarea id="f_address" rows="2" autocomplete="street-address">${esc(form.address)}</textarea>`) : ''}
     ${field('note', 'Anything to tell the kitchen? (optional)', `<textarea id="f_note" rows="2" placeholder="e.g. less spicy">${esc(form.note)}</textarea>`)}
-    ${R.whatsapp && isOpen() ? `<button class="send" data-a="send" ${below ? 'disabled' : ''}>Send order on WhatsApp</button>
-      <p class="how">WhatsApp will open with your order already written. Just tap the send button there. You can save a receipt afterwards.</p><p class="err" id="sendErr" role="alert"></p>`
+    ${R.whatsapp && isOpen() ? `<button class="send" data-a="send" ${below ? 'disabled' : ''}>Place Order on WhatsApp</button>
+      <p class="how">Next you will see your final order as a receipt picture. You send that picture to the restaurant on WhatsApp.</p><p class="err" id="sendErr" role="alert"></p>`
       : `<p class="warn">${!isOpen() ? 'This restaurant is closed right now, so orders cannot be sent.' : 'This restaurant has not set up WhatsApp ordering yet. Please show this list to the staff.'}</p>`}
-    <button class="clear" data-a="clear">Clear my order</button></div></div>`;
+    <button class="clear" data-a="clear">Clear my order</button></div></div>`);
   $('bar').classList.add('hidden');
 }
 function closeSheet() { $('host').innerHTML = ''; $('host').dataset.sheet = ''; opt = null; bar(); }
@@ -364,7 +409,7 @@ async function send() {
   try { localStorage.setItem('cust', JSON.stringify({ name: form.name, phone: form.phone, address: form.address })); } catch (e) {}
   const btn = document.querySelector('.send[data-a="send"]'); btn.disabled = true; btn.textContent = 'Sending…'; err('');
   const payload = { type: form.type, name: form.name.trim(), table: form.table.trim(), phone: form.phone.trim(), address: form.address.trim(), note: form.note.trim(),
-    lines: lines().map((l) => { const [id, s, a] = l.k.split('|'); return { id: +id, size: +s, addons: a ? a.split('.').map(Number) : [], qty: l.q }; }) };
+    lines: lines().map((l) => { const [id, s, a] = l.k.split('|'); return s === 'x' ? { id: +id, extra: +a, qty: l.q } : { id: +id, size: +s, addons: a ? a.split('.').map(Number) : [], qty: l.q }; }) };
   let order = null;
   try {   // the restaurant's system records the order and recalculates the prices
     const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 7000);
@@ -372,25 +417,31 @@ async function send() {
     clearTimeout(to);
     const j = await res.json().catch(() => ({}));
     if (res.ok) order = j.order;
-    else if (res.status < 500) { btn.disabled = false; btn.textContent = 'Send order on WhatsApp'; return err(j.error || 'Could not place the order.'); }
+    else if (res.status < 500) { btn.disabled = false; btn.textContent = 'Place Order on WhatsApp'; return err(j.error || 'Could not place the order.'); }
   } catch (e) { /* network problem: the customer can still send the WhatsApp message */ }
   if (!order) order = localOrder();
-  const label = { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' }[order.type], m = (n) => money(n);
-  const msg = [`*New order${order.code ? ' #' + order.code : ''} - ${R.name}*`, `Order type: ${label}`,
+  try { localStorage.setItem(PK, JSON.stringify({ order, at: Date.now() })); } catch (e) {}
+  showReceipt(order);   // the final order is sent as a receipt picture (it cannot be edited like text)
+}
+function orderText(order) {   // the full text version, used only if the customer chooses "Send as text instead"
+  const R = D.restaurant, label = { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' }[order.type], m = (n) => money(n);
+  return [`*New order${order.code ? ' #' + order.code : ''} - ${R.name}*`, `Order type: ${label}`,
     order.table ? `Table: ${order.table}` : null, order.name ? `Name: ${order.name}` : null, order.phone ? `Phone: ${order.phone}` : null,
     order.type === 'delivery' ? `Address: ${order.address}` : null, '',
     ...order.items.map((i) => `${i.qty} x ${i.name}${i.label ? ' (' + i.label + ')' : ''} - ${m(i.total)}`), '',
-    order.fee ? `Items: ${m(order.subtotal)}` : null, order.fee ? `Delivery fee: ${m(order.fee)}` : null,
+    order.fee || (order.charges || []).length ? `Items: ${m(order.subtotal)}` : null, order.fee ? `Delivery fee: ${m(order.fee)}` : null,
+    ...(order.charges || []).map((c) => `${c.label}: ${m(c.amount)}`),
     `*Total: ${m(order.total)}*`, order.note ? `Note: ${order.note}` : null].filter((x) => x !== null).join('\n');
-  try { localStorage.setItem(PK, JSON.stringify({ order, at: Date.now() })); } catch (e) {}
-  setTimeout(maybeReceipt, 3000);   // if WhatsApp did not take over the screen, show the receipt anyway
-  location.href = 'https://wa.me/' + R.whatsapp + '?text=' + encodeURIComponent(msg);
+}
+function shortText(o) {   // goes with the receipt picture
+  return `*Order${o.code ? ' #' + o.code : ''} - ${D.restaurant.name}*\nTotal: ${money(o.total)}\nMy receipt picture is attached.`;
 }
 function localOrder() {
   const R = D.restaurant, fee = feeNow(), sub = subtotal();
   return { code: '', created_at: new Date().toISOString().slice(0, 19).replace('T', ' '), type: form.type, table: form.type === 'dinein' ? form.table.trim() : '',
     name: form.name.trim(), phone: form.type !== 'dinein' ? form.phone.trim() : '', address: form.type === 'delivery' ? form.address.trim() : '', note: form.note.trim(),
-    items: lines().map((l) => ({ name: l.it.name, label: l.label, qty: l.q, unit: l.unit, total: l.unit * l.q })), subtotal: sub, fee, total: sub + fee, currency: R.currency, restaurant: R.name };
+    items: lines().map((l) => ({ name: l.name, label: l.label, qty: l.q, unit: l.unit, total: l.unit * l.q, extra: !!l.extra })), subtotal: sub, fee,
+    charges: chargeRows(), total: totalNow(), currency: R.currency, restaurant: R.name };
 }
 
 /* ---------- receipt popup (shown when the customer comes back from WhatsApp) ---------- */
@@ -401,8 +452,9 @@ function receiptDoc(o) {
     meta: [['Date', Receipt.when(o.created_at)], ['Order type', { dinein: 'Dine in', takeaway: 'Takeaway', delivery: 'Delivery' }[o.type]],
       ['Table', o.table], ['Name', o.name], ['Phone', o.phone], ['Address', o.address]],
     sections: [{ title: 'Your order', rows: o.items.map((i) => ({ a: i.qty + ' x ' + i.name, b: m(i.total), sub: i.label })) }],
-    totals: [...(o.fee ? [['Items', m(o.subtotal)], ['Delivery fee', m(o.fee)]] : []), ['Total', m(o.total), true]],
-    footer: 'Thank you! This receipt shows the order you sent to the restaurant on WhatsApp. Please keep it as your record.' };
+    totals: [...(o.fee || (o.charges || []).length ? [['Items', m(o.subtotal)]] : []), ...(o.fee ? [['Delivery fee', m(o.fee)]] : []), ...(o.charges || []).map((c) => [c.label, m(c.amount)]), ['Total', m(o.total), true]],
+    footer: o.code ? `FINAL ORDER. Thank you! The restaurant checks this order by its number #${o.code} in its own system, so a picture that has been changed will not be accepted. Please keep it as your record.`
+      : 'Thank you! This order could not be saved in the restaurant\'s system. Please confirm it with the restaurant before you rely on it.' };
 }
 function maybeReceipt() {
   if (rcptOpen || !D || document.visibilityState === 'hidden') return;
@@ -414,7 +466,7 @@ let RR = {};
 function rateBox(o) {
   if (!o.code) return '';
   try { if (localStorage.getItem('rated:' + o.code)) return '<div class="rate"><p class="how" style="margin:0">Thank you for rating your dishes!</p></div>'; } catch (e) {}
-  const seen = new Set(), dishes = o.items.filter((i) => i.id && !seen.has(i.id) && seen.add(i.id)).slice(0, 8);
+  const seen = new Set(), dishes = o.items.filter((i) => i.id && !i.extra && !seen.has(i.id) && seen.add(i.id)).slice(0, 8);
   if (!dishes.length) return '';
   return `<div class="rate" id="rateBox"><h3>How were your dishes?</h3><p class="how" style="text-align:left;margin:2px 0 6px">Optional. Your stars help other guests choose.</p>
     ${dishes.map((i) => `<div class="rrow"><span>${esc(i.name)}</span><span class="rstars">${[1, 2, 3, 4, 5].map((k) => `<button data-a="rstar" data-d="${i.id}" data-n="${k}" aria-label="${k} star${k > 1 ? 's' : ''}">★</button>`).join('')}</span></div>`).join('')}
@@ -433,15 +485,34 @@ async function sendRatings() {
 function showReceipt(o) {
   rcptOpen = true; RO = o; RR = {}; cart = {}; save(); D.items.forEach((i) => paintItem(i.id));
   RC = Receipt.draw(receiptDoc(o));
+  const R = D.restaurant, phone = Receipt.canShareFiles();
   $('host').dataset.sheet = 'receipt';
   $('host').innerHTML = `<div class="back" data-a="rshut"><div class="sheet" role="dialog" aria-label="Your receipt">
-    <div class="hd"><h2>Your receipt</h2><button class="x" data-a="rclose">Close</button></div>
-    <p class="how" style="margin:0 0 12px;text-align:left">If WhatsApp has not sent your message yet, go back and tap send there. Save this receipt as your record.</p>
+    <div class="hd"><h2>Your final order</h2><button class="x" data-a="rclose">Close</button></div>
+    <p class="how" style="margin:0 0 12px;text-align:left"><b>Your order is not sent yet.</b> ${phone ? `Tap the green button, choose WhatsApp, pick <b>${esc(R.name)}</b>'s chat and send.` : 'Click the green button. We copy this receipt and open WhatsApp. In the chat press Ctrl+V to paste it, then send.'} The receipt picture is your final order and cannot be changed like a text message.</p>
     <img class="rimg" alt="Order receipt" src="${RC.toDataURL('image/jpeg', 0.9)}">
-    <button class="send" style="background:var(--brand);color:var(--on-brand)" data-a="rdl">Download receipt (JPG)</button>
-    ${Receipt.canShareFiles() ? '<button class="send" style="background:var(--tint);color:var(--brand-ink);margin-top:10px" data-a="rshare">Share or save to Photos</button>' : ''}
+    <button class="send" data-a="rwa">Send receipt on WhatsApp</button>
+    <p class="how" id="rnote" role="status"></p>
+    <button class="send" style="background:var(--tint);color:var(--brand-ink);margin-top:6px" data-a="rdl">Download receipt (JPG)</button>
+    <button class="clear" data-a="rtext">WhatsApp is not working? Send as text instead</button>
     ${rateBox(o)}</div></div>`;
   $('bar').classList.add('hidden');
+}
+async function sendReceiptWa() {
+  const o = RO, R = D.restaurant, name = 'receipt-' + (o.code || 'order'), note = (t, link) => { const n = $('rnote'); if (n) n.innerHTML = esc(t) + (link || ''); };
+  const blob = await new Promise((res) => RC.toBlob(res, 'image/jpeg', 0.92));
+  const file = new File([blob], name + '.jpg', { type: 'image/jpeg' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {   // phones: the share sheet sends the picture to WhatsApp
+    try { await navigator.share({ files: [file], text: shortText(o), title: name }); return note('Please check in WhatsApp that your message was sent. If it was not, tap the green button again.'); }
+    catch (e) { if (e && e.name === 'AbortError') return note('Not sent yet. Tap the green button to try again.'); }
+  }
+  let copied = false;   // laptops: copy the picture, open the chat, the customer pastes it
+  try { const png = await new Promise((res) => RC.toBlob(res, 'image/png')); await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]); copied = true; } catch (e) {}
+  if (!copied) Receipt.saveJpg(RC, name);
+  const url = 'https://wa.me/' + R.whatsapp + '?text=' + encodeURIComponent(shortText(o));
+  const w = window.open(url, '_blank');
+  note(copied ? 'The receipt is copied. In the WhatsApp chat press Ctrl+V (Cmd+V on Mac) to paste it, then press send.' : 'The receipt was downloaded. In the WhatsApp chat tap the paperclip, attach the picture, then press send.',
+    w ? '' : ` <a href="${url}" target="_blank" rel="noopener" style="color:var(--brand-ink);font-weight:700">Open WhatsApp</a>`);
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(maybeReceipt, 300); });
 window.addEventListener('pageshow', () => setTimeout(maybeReceipt, 300));
@@ -475,11 +546,17 @@ document.addEventListener('click', (e) => {
   else if (a === 'open') orderSheet(); else if (a === 'close' || a === 'shut') closeSheet();
   else if (a === 'rclose' || a === 'rshut') { try { localStorage.removeItem(PK); } catch (er) {} rcptOpen = false; closeSheet(); }
   else if (a === 'rdl') Receipt.saveJpg(RC, 'receipt-' + (RO.code || 'order'));
-  else if (a === 'rshare') Receipt.share(RC, 'receipt-' + (RO.code || 'order'));
+  else if (a === 'rwa') sendReceiptWa();
+  else if (a === 'rtext') location.href = 'https://wa.me/' + D.restaurant.whatsapp + '?text=' + encodeURIComponent(orderText(RO));
   else if (a === 'opt') optSheet(id);
-  else if (a === 'osize') { opt.size = +el.dataset.i; optSheet(opt.id); }
-  else if (a === 'oadd') { const k = +el.dataset.i, p = opt.adds.indexOf(k); if (p < 0) opt.adds.push(k); else opt.adds.splice(p, 1); opt.adds.sort((x, y) => x - y); optSheet(opt.id); }
-  else if (a === 'oconfirm') { const i = byId(opt.id), k = keyOf(i.id, i.sizes.length ? opt.size : -1, opt.adds); cart[k] = (cart[k] || 0) + 1; save(); paintItem(i.id); closeSheet(); }
+  else if (a === 'oinc' || a === 'odec') { const t = el.dataset.t, k = +el.dataset.i, d = a === 'oinc' ? 1 : -1;
+    if (t === 'plain') opt.plain = Math.min(50, Math.max(1, opt.plain + d));
+    else { const mp = t === 'size' ? opt.sz : opt.ad; mp[k] = Math.min(50, Math.max(0, (mp[k] || 0) + d)); }
+    optSheet(opt.id); }
+  else if (a === 'oconfirm') { const i = byId(opt.id), o = opt, put = (key, n) => { cart[key] = (cart[key] || 0) + n; };
+    if (i.sizes.length) Object.entries(o.sz).forEach(([k, n]) => { if (n > 0) put(keyOf(i.id, +k, []), n); }); else put(keyOf(i.id, -1, []), o.plain);
+    Object.entries(o.ad).forEach(([k, n]) => { if (n > 0) put(`${i.id}|x|${k}`, n); });
+    prune(); save(); paintItem(i.id); closeSheet(); }
   else if (a === 'otype') { readForm(); form.type = id; orderSheet(); }
   else if (a === 'send') send();
   else if (a === 'clear') { if (confirm('Remove everything from your order?')) { cart = {}; save(); D.items.forEach((i) => paintItem(i.id)); closeSheet(); } }
@@ -500,7 +577,7 @@ function boot() {
   try { const c = JSON.parse(localStorage.getItem('cust') || '{}'); form.name = c.name || ''; form.phone = c.phone || ''; form.address = c.address || ''; } catch (e) {}
   try { const sv = JSON.parse(localStorage.getItem(CK) || '{}');
     Object.entries(sv).forEach(([k, q]) => { const l = line(k); if (l && l.it.is_available && q > 0) cart[k] = q; }); } catch (e) {}
-  render(); maybeReceipt();
+  prune(); render(); maybeReceipt();
 }
 (async function () {
   const fail = (t, p2) => { $('app').innerHTML = `<div class="state"><h2>${t}</h2><p>${p2}</p></div>`; };
