@@ -1226,7 +1226,7 @@ document.addEventListener('click', async (e) => {
     else if (act === 'add-charge') { const box = $('chargeRows'); if (box.children.length >= +box.dataset.max) toast('Your plan allows up to ' + box.dataset.max + ' charges.'); else box.insertAdjacentHTML('beforeend', chargeRow(null, true)); }
     else if (act === 'rm-charge') el.closest('.crow').remove();
     else if (act === 'save-charges') { await api('/api/r/settings', 'PUT', { charges: collectCharges() }); await refresh(); toast('Charges saved'); }
-    else if (act === 'theme-reset') { if (confirm('Restore the default colors for your menu?')) { const b = { theme_primary: '#0F766E' }; if (S.info.custom_theme) b.theme_accent = '#F59E0B';
+    else if (act === 'theme-reset') { if (confirm('Restore the default colors for your menu?')) { const b = { theme_primary: '#0F4C45' }; if (S.info.custom_theme) b.theme_accent = '#0F4C45';
       await api('/api/r/settings', 'PUT', b); await refresh(); toast('Default colors restored'); } }
     else if (act === 'logo-del') { if (confirm('Remove your logo?')) { await api('/api/r/logo', 'DELETE'); await refresh(); toast('Logo removed'); } }
     else if (act === 'terms-go') { el.disabled = true; try { await api('/api/auth/accept-terms', 'POST', { version: S.me.terms_required }); S.me.terms_ok = true; closeSheet(); await refresh(); toast('Thank you'); } catch (er) { $('tErr').textContent = er.message; el.disabled = false; } }
