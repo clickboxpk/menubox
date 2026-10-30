@@ -489,30 +489,40 @@ function showReceipt(o) {
   $('host').dataset.sheet = 'receipt';
   $('host').innerHTML = `<div class="back" data-a="rshut"><div class="sheet" role="dialog" aria-label="Your receipt">
     <div class="hd"><h2>Your final order</h2><button class="x" data-a="rclose">Close</button></div>
-    <p class="how" style="margin:0 0 12px;text-align:left"><b>Your order is not sent yet.</b> ${phone ? `Tap the green button, choose WhatsApp, pick <b>${esc(R.name)}</b>'s chat and send.` : 'Click the green button. We copy this receipt and open WhatsApp. In the chat press Ctrl+V to paste it, then send.'} The receipt picture is your final order and cannot be changed like a text message.</p>
+    <p class="how" style="margin:0 0 12px;text-align:left"><b>Your order is not sent yet.</b> Tap the green button. WhatsApp opens <b>${esc(R.name)}</b>'s chat with your order already written. Just press send.${phone ? '' : ' The receipt picture is copied too, so you can paste it with Ctrl+V.'}</p>
     <img class="rimg" alt="Order receipt" src="${RC.toDataURL('image/jpeg', 0.9)}">
-    <button class="send" data-a="rwa">Send receipt on WhatsApp</button>
+    <button class="send" data-a="rwa">Send order to ${esc(R.name)} on WhatsApp</button>
     <p class="how" id="rnote" role="status"></p>
+    ${phone ? '<button class="send" style="background:var(--tint);color:var(--brand-ink);margin-top:6px" data-a="rpic">Also send receipt picture (optional)</button>' : ''}
     <button class="send" style="background:var(--tint);color:var(--brand-ink);margin-top:6px" data-a="rdl">Download receipt (JPG)</button>
-    <button class="clear" data-a="rtext">WhatsApp is not working? Send as text instead</button>
     ${rateBox(o)}</div></div>`;
   $('bar').classList.add('hidden');
 }
+function waUrl(text) { return 'https://wa.me/' + D.restaurant.whatsapp + '?text=' + encodeURIComponent(text); }
+/* MAIN button: opens the RESTAURANT'S chat directly (saved number from the dashboard). The customer never has to pick a contact.
+   The full order goes as a message; on a computer the receipt picture is also copied so it can be pasted into the chat. */
 async function sendReceiptWa() {
-  const o = RO, R = D.restaurant, name = 'receipt-' + (o.code || 'order'), note = (t, link) => { const n = $('rnote'); if (n) n.innerHTML = esc(t) + (link || ''); };
+  const o = RO, name = 'receipt-' + (o.code || 'order'), note = (t, link) => { const n = $('rnote'); if (n) n.innerHTML = esc(t) + (link || ''); };
+  const url = waUrl(orderText(o)), phone = Receipt.canShareFiles();
+  if (phone) { note('Opening the restaurant\'s WhatsApp chat. Just press send.'); location.href = url; return; }
+  let copied = false;   // computer: copy the picture first, then open the chat
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': new Promise((res) => RC.toBlob(res, 'image/png')) })]); copied = true;
+  } catch (e) {}
+  const w = window.open(url, '_blank');
+  note(copied ? 'The order message is ready in the restaurant\'s chat. Press send. The receipt picture is copied too: press Ctrl+V (Cmd+V on Mac) in the chat to add it.' : 'The order message is ready in the restaurant\'s chat. Press send.',
+    w ? '' : ` <a href="${url}" target="_blank" rel="noopener" style="color:var(--brand-ink);font-weight:700">Open WhatsApp</a>`);
+}
+/* OPTIONAL button (phones): also send the receipt PICTURE. WhatsApp itself asks for the chat here, because a web page cannot choose the chat for a picture. */
+async function sendReceiptPic() {
+  const o = RO, name = 'receipt-' + (o.code || 'order'), note = (t) => { const n = $('rnote'); if (n) n.textContent = t; };
   const blob = await new Promise((res) => RC.toBlob(res, 'image/jpeg', 0.92));
   const file = new File([blob], name + '.jpg', { type: 'image/jpeg' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {   // phones: the share sheet sends the picture to WhatsApp
-    try { await navigator.share({ files: [file], text: shortText(o), title: name }); return note('Please check in WhatsApp that your message was sent. If it was not, tap the green button again.'); }
-    catch (e) { if (e && e.name === 'AbortError') return note('Not sent yet. Tap the green button to try again.'); }
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: name }); return note('In WhatsApp choose ' + D.restaurant.name + ' and send.'); }
+    catch (e) { if (e && e.name === 'AbortError') return note('Picture not sent. Tap the button again if you want to send it.'); }
   }
-  let copied = false;   // laptops: copy the picture, open the chat, the customer pastes it
-  try { const png = await new Promise((res) => RC.toBlob(res, 'image/png')); await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]); copied = true; } catch (e) {}
-  if (!copied) Receipt.saveJpg(RC, name);
-  const url = 'https://wa.me/' + R.whatsapp + '?text=' + encodeURIComponent(shortText(o));
-  const w = window.open(url, '_blank');
-  note(copied ? 'The receipt is copied. In the WhatsApp chat press Ctrl+V (Cmd+V on Mac) to paste it, then press send.' : 'The receipt was downloaded. In the WhatsApp chat tap the paperclip, attach the picture, then press send.',
-    w ? '' : ` <a href="${url}" target="_blank" rel="noopener" style="color:var(--brand-ink);font-weight:700">Open WhatsApp</a>`);
+  Receipt.saveJpg(RC, name); note('The receipt picture was downloaded. In the restaurant\'s WhatsApp chat tap the paperclip, attach it and send.');
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') setTimeout(maybeReceipt, 300); });
 window.addEventListener('pageshow', () => setTimeout(maybeReceipt, 300));
@@ -547,8 +557,8 @@ document.addEventListener('click', (e) => {
   else if (a === 'rclose' || a === 'rshut') { try { localStorage.removeItem(PK); } catch (er) {} rcptOpen = false; closeSheet(); }
   else if (a === 'rdl') Receipt.saveJpg(RC, 'receipt-' + (RO.code || 'order'));
   else if (a === 'rwa') sendReceiptWa();
-  else if (a === 'rtext') location.href = 'https://wa.me/' + D.restaurant.whatsapp + '?text=' + encodeURIComponent(orderText(RO));
-  else if (a === 'opt') optSheet(id);
+  else if (a === 'rpic') sendReceiptPic();
+    else if (a === 'opt') optSheet(id);
   else if (a === 'oinc' || a === 'odec') { const t = el.dataset.t, k = +el.dataset.i, d = a === 'oinc' ? 1 : -1;
     if (t === 'plain') opt.plain = Math.min(50, Math.max(1, opt.plain + d));
     else { const mp = t === 'size' ? opt.sz : opt.ad; mp[k] = Math.min(50, Math.max(0, (mp[k] || 0) + d)); }
